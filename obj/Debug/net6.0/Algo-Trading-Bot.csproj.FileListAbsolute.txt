@@ -1,0 +1,15 @@
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.csproj.AssemblyReference.cache
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.GeneratedMSBuildEditorConfig.editorconfig
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.AssemblyInfoInputs.cache
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.AssemblyInfo.cs
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.csproj.CoreCompileInputs.cache
+/home/kanishka/Desktop/Algo-Trading-Bot/bin/Debug/net6.0/Algo-Trading-Bot
+/home/kanishka/Desktop/Algo-Trading-Bot/bin/Debug/net6.0/Algo-Trading-Bot.deps.json
+/home/kanishka/Desktop/Algo-Trading-Bot/bin/Debug/net6.0/Algo-Trading-Bot.runtimeconfig.json
+/home/kanishka/Desktop/Algo-Trading-Bot/bin/Debug/net6.0/Algo-Trading-Bot.dll
+/home/kanishka/Desktop/Algo-Trading-Bot/bin/Debug/net6.0/Algo-Trading-Bot.pdb
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.dll
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/refint/Algo-Trading-Bot.dll
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.pdb
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/Algo-Trading-Bot.genruntimeconfig.cache
+/home/kanishka/Desktop/Algo-Trading-Bot/obj/Debug/net6.0/ref/Algo-Trading-Bot.dll
