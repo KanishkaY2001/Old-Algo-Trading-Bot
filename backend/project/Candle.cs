@@ -9,12 +9,32 @@ namespace TradingBot
         public decimal low { get; set; }
         public decimal close { get; set; }
 
-        /* Indicator Profiles */
-        public GenData genData { get; set; } = new GenData();
-        public HiLoData hiloData { get; set; } = new HiLoData();
-        public MacdSData mcdSData { get; set; } = new MacdSData();
-        public RsiData rsiData { get; set; } = new RsiData();
 
+        /* General Data */
+        public decimal pivotHi { get ; set; }
+        public decimal pivotLo { get; set; }
+
+
+        /* Higher Lower Data */
+        public decimal? hl { get; set; } // Trend direction
+        public decimal? zz { get; set; } // Zig zag curve
+        public string hilo { get; set; } = "-";
+        public string hiloDecision { get; set; } = "-";
+
+
+        /* Macd Signal Data */
+        public decimal? signal { get; set; }
+        public decimal? macd { get; set; }
+        public decimal? hist { get; set; }
+        public decimal? fast { get; set; }
+        public decimal? slow { get; set; }
+        public string macDecision { get; set;} = "-";
+
+
+        /* Relative Strength Index */
+        public decimal? rsi {get; set; }
+
+        
         public Candle(int ux, decimal op, decimal hi, decimal lo, decimal cl)
         {
             unix = ux;
