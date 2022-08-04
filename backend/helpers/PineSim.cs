@@ -37,9 +37,9 @@ namespace TradingBot
             }
 
             if (high)
-                return (mid.pivotHi = mid.high);
+                return (mid.pivH = mid.high);
 
-            return (mid.pivotLo = mid.low);
+            return (mid.pivL = mid.low);
         }
 
         public static object? GetPropVal(Candle candle, string prop)
@@ -62,9 +62,34 @@ namespace TradingBot
             info.SetValue(candle, val);
         }
 
-        public static void GetValueWhen(List<Candle> data, string cond)
+        private static bool Evaluator(Candle candle, string[] c)
         {
-            
+            /* Handles simple evaluation */
+
+            // valueWhen(hl, hl, 1) checks if hl != null
+            if (c.Length == 1)
+                return GetPropVal(candle, c[0]) != null;
+
+            if (c.Length == 3)
+            {
+                var valA = GetPropVal(candle, c[0]);
+                var valB = GetPropVal(candle, c[1]);
+                switch(c[1])
+                {
+                    case "==": return valA == valB;
+                }
+            }
+            return false;
+        }
+
+        public static object? GetValueWhen(List<Candle> data, string condition, string prop, int at)
+        {
+            if (at == 0)
+                return GetPropVal(data.Last(), prop);
+
+            var result = data.Where(candle => Evaluator(candle, condition.Split(" ")));
+            int idx = (result.Count() - 1) - (at - 1);
+            return idx >= 0 ? GetPropVal(result.ElementAt(idx), prop) : null;
         }
 
         public static decimal? GetPastValue(List<Candle> data, string src, int back)

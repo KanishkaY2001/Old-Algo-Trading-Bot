@@ -8,6 +8,13 @@ namespace TradingBot
         public Dictionary<string, Project> projects { get; set; } = new Dictionary<string, Project>();
 
         public TaskHandler tradeDecHead { get; } = new TradeDecHead();
+        public TaskHandler tradeDecHiLo { get; } = new TradeDecHiLo();
+        public TaskHandler tradeDecTail { get; } = new TradeDecTail();
+
+        public Manager()
+        {
+            tradeDecHead.SetNext(tradeDecHiLo).SetNext(tradeDecTail);;
+        }
     
     }
 }

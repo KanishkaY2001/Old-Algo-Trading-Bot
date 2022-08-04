@@ -10,8 +10,8 @@ namespace TradingBot
         public decimal close { get; set; }
 
         /* General Data */
-        public decimal pivotHi { get ; set; }
-        public decimal pivotLo { get; set; }
+        public decimal? pivH { get ; set; }
+        public decimal? pivL { get; set; }
         public string finalDecision { get; set; } = "-";
 
         /* Higher Lower Data */

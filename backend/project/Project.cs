@@ -14,9 +14,8 @@ namespace TradingBot
         public int rightBars { get; set; } = 2;
         
         /* HighLow */
-        //public decimal? prevHl { get; set; }
-        //public decimal? prevZz { get; set; }
-        //public List<string> hiloPattern { get; set; } = new List<string>();
+        public int maxPattern { get; set; } = 9;
+        public List<string> HiLoPattern { get; set; } = new List<string>();
 
         /* MacdSig */
         public decimal? macdSum { get; set; } = 0;
@@ -124,6 +123,11 @@ namespace TradingBot
         public decimal? PivotLow()
         {
             return PineSim.GetPivotHighLow(this, false);
+        }
+
+        public decimal? ValueWhen(string cond, string src, int ocr)
+        {
+            return (decimal?)PineSim.GetValueWhen(data, cond, src, ocr);
         }
 
         public decimal? Past(string src, int back)
