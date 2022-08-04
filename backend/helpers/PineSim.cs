@@ -2,6 +2,46 @@ namespace TradingBot
 {
     public class PineSim
     {
+        public static decimal? GetPivotHighLow(Project project, bool high)
+        {
+            var data = project.data;
+            int left = project.leftBars;
+            int right = project.rightBars;
+            int dataSize = data.Count;
+
+            if (dataSize < left + right + 1)
+                return null;
+
+            int midIdx = dataSize - right - 1;
+            Candle mid = data[midIdx];
+
+            for (int i = 0; i < Math.Max(left, right); ++i)
+            {
+                Candle adj;
+                int leftIdx = midIdx - i - 1;
+                int rightIdx = midIdx + i + 1;
+
+                if (leftIdx >= 0)
+                {
+                    adj = data[leftIdx];
+                    if ((high && mid.high < adj.high) || (!high && mid.low > adj.low))
+                        return null;
+                }
+
+                if (rightIdx < dataSize)
+                {
+                    adj = data[rightIdx];
+                    if ((high && mid.high <= adj.high) || (!high && mid.low >= adj.low))
+                        return null;
+                }
+            }
+
+            if (high)
+                return (mid.pivotHi = mid.high);
+
+            return (mid.pivotLo = mid.low);
+        }
+
         public static object? GetPropVal(Candle candle, string prop)
         {
             var info = candle.GetType().GetProperty(prop);
@@ -20,6 +60,11 @@ namespace TradingBot
                 throw new Exception($"-- Invalid Info: '{info}', or Property: '{prop}' --");
 
             info.SetValue(candle, val);
+        }
+
+        public static void GetValueWhen(List<Candle> data, string cond)
+        {
+            
         }
 
         public static decimal? GetPastValue(List<Candle> data, string src, int back)
@@ -60,6 +105,11 @@ namespace TradingBot
         }
 
         public static object? Iff(bool cond, object? _then, object? _else)
+        {
+            return cond ? _then : _else;
+        }
+
+        public static decimal? Iff(bool cond, decimal? _then, decimal? _else)
         {
             return cond ? _then : _else;
         }

@@ -9,10 +9,14 @@ namespace TradingBot
 
         /* Indicator Profiles */
 
+        /* General */
+        public int leftBars { get; set; } = 2;
+        public int rightBars { get; set; } = 2;
+        
         /* HighLow */
-        public decimal? prevHl { get; set; }
-        public decimal? prevZz { get; set; }
-        public List<string> hiloPattern { get; set; } = new List<string>();
+        //public decimal? prevHl { get; set; }
+        //public decimal? prevZz { get; set; }
+        //public List<string> hiloPattern { get; set; } = new List<string>();
 
         /* MacdSig */
         public decimal? macdSum { get; set; } = 0;
@@ -97,7 +101,7 @@ namespace TradingBot
         public void MakeTradeDecision()
         {
             /* Apply HiLo Indicator */
-            //HighLow.ApplyIndicator(this);
+            HighLow.ApplyIndicator(this);
 
             /* Apply MacdSignal Indicator */
             //MacdSig.ApplyIndicator(this);
@@ -112,6 +116,16 @@ namespace TradingBot
 
 
         /* Pinescript Methods */
+        public decimal? PivotHigh()
+        {
+            return PineSim.GetPivotHighLow(this, true);
+        }
+
+        public decimal? PivotLow()
+        {
+            return PineSim.GetPivotHighLow(this, false);
+        }
+
         public decimal? Past(string src, int back)
         {
             return PineSim.GetPastValue(data, src, back);
