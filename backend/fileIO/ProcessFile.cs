@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace TradingBot
 {
     public class ProcessFile
@@ -13,6 +15,9 @@ namespace TradingBot
                 reader.ReadLine(); // skip first line
                 var portfolioSnaps = new List<string>();
 
+                writer.WriteLine(GenerateHeader());
+                var data = project.data;
+
                 while (!reader.EndOfStream)
                 {
                     /* Get File Data */
@@ -21,16 +26,17 @@ namespace TradingBot
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
                     project.ProcessCandle(candle);
+
+                    /* Process File Writing */
                     portfolioSnaps.Add(PortfolioToString(project));
+                    if (data.Count == project.maxDataLen + 1)
+                        writer.WriteLine($"{CandleToString(data[0])}{portfolioSnaps.Last()}");
                 }
 
-                writer.WriteLine(GenerateHeader());
-                var data = project.data;
-                
                 for (int i = 0; i < data.Count; ++i)
                 {
-                    string line = $"{CandleToString(data[i])}{portfolioSnaps[i]}";
-                    writer.WriteLine(line);
+                    int snapIdx = portfolioSnaps.Count - (project.maxDataLen + 1 - i);
+                    writer.WriteLine($"{CandleToString(data[i])}{portfolioSnaps[snapIdx]}");
                 }
             }
 

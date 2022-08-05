@@ -1,5 +1,14 @@
 namespace TradingBot
 {
+
+    public class GeneralOpt
+    {
+        /* General */
+        public int leftBars { get; set; } = 2;
+        public int rightBars { get; set; } = 2;
+    }
+    
+
     /* Trade Responsibility Chain */
     public class TradeDecHead : TaskHandler
     {

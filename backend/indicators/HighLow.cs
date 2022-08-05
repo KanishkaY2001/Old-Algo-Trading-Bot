@@ -2,6 +2,19 @@ using System.Text.RegularExpressions;
 
 namespace TradingBot
 {
+    public class HighLowOpt
+    {
+        public decimal? prevHl { get; set; }
+        public decimal? prevZz { get; set; }
+        public int maxPattern { get; set; }
+        public List<string> pattern { get; set; } = new List<string>();
+
+        public HighLowOpt(int max)
+        {
+            maxPattern = max;
+        }
+    }
+
     public class HighLow
     {
         private static volatile Dictionary<string, Regex> buyPatterns = new Dictionary<string, Regex>
@@ -28,47 +41,48 @@ namespace TradingBot
 
                 if (count > i && c.hl == ehl && c.zz != null)
                 {
-                    previousArr[arrIdx] = (decimal)c.zz!;
+                    previousArr[arrIdx] = (decimal)c.zz;
                     if (++arrIdx == 4)
                         break;
 
-                    var alt = PineSim.Iff(candle.hl == 1, -1, 1)!;
-                    ehl = arrIdx % 2 == 0? (decimal)alt : candle.hl;
+                    decimal alt = candle.hl == 1 ? -1 : 1;
+                    ehl = arrIdx % 2 == 0? alt : candle.hl;
                 }
             }
             return previousArr;
         }
 
-        public static void ApplyIndicator(Project p)
-        {
-            int idx = p.data.Count - 1;
-            if (idx < 0 || idx < p.rightBars + p.leftBars)
+        /* HigherLower Indicator */
+        public static void ApplyIndicator(Project project)
+        {  
+            int idx = project.data.Count - 1;
+            if (idx < 0 || idx < project.genOpt.rightBars + project.genOpt.leftBars)
                 return;
 
-            Candle candle = p.data[idx];
-            Candle target = p.data[idx - p.rightBars];
+            Candle candle = project.data[idx];
+            Candle target = project.data[idx - project.genOpt.rightBars];
 
-            decimal? ph = p.PivotHigh();
-            decimal? pl = p.PivotLow();
+            decimal? ph = project.PivotHigh();
+            decimal? pl = project.PivotLow();
+            var opt = project.hiloOpt;
             
-            decimal? prevHl = p.ValueWhen("hl","hl",1);
-            decimal? prevZz = p.ValueWhen("zz","zz",1);
-
             target.hl = PineSim.Iff(ph != null, 1, PineSim.Iff(pl != null, -1, null));
             target.zz = PineSim.Iff(ph != null, ph, PineSim.Iff(pl != null, pl, null));
-            target.zz = PineSim.Iff(pl != null && target.hl== -1 && prevHl == -1 && pl > prevZz, null, target.zz);
-            target.zz = PineSim.Iff(ph != null && target.hl== 1 && prevHl == 1  && ph < prevZz, null, target.zz);
-
-            target.hl= PineSim.Iff(target.hl== -1 && prevHl == 1 && target.zz > prevZz, null, target.hl);
-            target.hl= PineSim.Iff(target.hl== 1 && prevHl == -1 && target.zz < prevZz, null, target.hl);
+            target.zz = PineSim.Iff(pl != null && target.hl== -1 && opt.prevHl == -1 && pl > opt.prevZz, null, target.zz);
+            target.zz = PineSim.Iff(ph != null && target.hl== 1 && opt.prevHl == 1  && ph < opt.prevZz, null, target.zz);
+            
+            target.hl= PineSim.Iff(target.hl== -1 && opt.prevHl == 1 && target.zz > opt.prevZz, null, target.hl);
+            target.hl= PineSim.Iff(target.hl== 1 && opt.prevHl == -1 && target.zz < opt.prevZz, null, target.hl);
             target.zz = PineSim.Iff(target.hl== null, null, target.zz);
 
-            decimal[] previous = FindPrevious(p, target, PineSim.Iff(target.hl == 1, -1, 1));
+            if (target.hl != null) opt.prevHl = target.hl;
+            if (target.zz != null) opt.prevZz = target.zz;
+   
+            decimal[] previous = FindPrevious(project, target, PineSim.Iff(target.hl == 1, -1, 1));
 
             string hl = "-";
             if (target.hl != null && target.zz != null)
             {   
-                
                 decimal a = (decimal)target.zz;
                 decimal b = previous[0];
                 decimal c = previous[1];
@@ -83,8 +97,7 @@ namespace TradingBot
                 target.hilo = hl;
             }
             
-            candle.hiloDecision = MakeDecision(p, hl, candle);
-            //Console.WriteLine($"unix: {Helper.UnixToDate(target.unix)} | hilo : {target.hilo}");
+            candle.hiloDecision = MakeDecision(project, hl, candle);
         }
 
 
@@ -103,8 +116,10 @@ namespace TradingBot
 
         private static string MakeDecision(Project project, string hl, Candle candle)
         {
-            List<string> data = project.HiLoPattern;
-            if (data.Count > project.maxPattern) data.RemoveAt(0);
+            List<string> data = project.hiloOpt.pattern;
+            if (data.Count > project.hiloOpt.maxPattern) 
+                data.RemoveAt(0);
+            
             data.Add(hl);
 
             if (CheckPattern(data, buyPatterns, candle))
@@ -130,7 +145,7 @@ namespace TradingBot
             if (candle.signal == null)
                 candle.hiloDecision = "idle";
 
-            int right = project.rightBars;
+            int right = project.genOpt.rightBars;
             var ptrn = data[data.Count - 1 - (data.Count >= right + 1? right : 0)];
             bool red = ptrn.macd >= ptrn.signal ? false : true;
 

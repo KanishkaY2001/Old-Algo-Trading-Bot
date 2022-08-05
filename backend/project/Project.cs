@@ -2,34 +2,17 @@ namespace TradingBot
 {
     public class Project
     {
+        public int maxDataLen { get; set; } = 50; // Everything else is removed
         public List<Candle> data { get; set; } = new List<Candle>();
         public Portfolio portfolio { get; set; }
         public TaskHandler tradeDecision { get; set; }
         public string dataStreamId { get; set; } = "";
 
-        /* Indicator Profiles */
-
-        /* General */
-        public int leftBars { get; set; } = 2;
-        public int rightBars { get; set; } = 2;
-        
-        /* HighLow */
-        public int maxPattern { get; set; } = 9;
-        public List<string> HiLoPattern { get; set; } = new List<string>();
-
-        /* MacdSig */
-        public decimal? macdSum { get; set; } = 0;
-        public decimal? fastSum { get; set; } = 0;
-        public decimal? slowSum { get; set; } = 0;
-        public List<decimal> smaMacd { get; set; } = new List<decimal>();
-        public List<decimal> smaFast { get; set; } = new List<decimal>();
-        public List<decimal> smaSlow { get; set; } = new List<decimal>();
-
-        /* RelStrIdx */
-        public decimal up { get; set; }
-        public decimal down { get; set; }
-        public decimal rsiSum { get; set; }
-        public Queue<decimal?> rsiQ = new Queue<decimal?>();
+        /* Indicator Optimisation Storage */
+        public GeneralOpt genOpt { get; set; } = new GeneralOpt();
+        public HighLowOpt hiloOpt { get; set; } = new HighLowOpt(9);
+        public MacdSigOpt macdSOpt { get; set; } = new MacdSigOpt(12, 26, 9);
+        public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
 
         public Project(TaskHandler decision, Portfolio _portfolio)
         {
@@ -93,6 +76,9 @@ namespace TradingBot
         /* Candle Methods */
         public void ProcessCandle(Candle candle)
         {
+            if (data.Count > maxDataLen)
+                data.RemoveAt(0);
+                
             data.Add(candle);
             MakeTradeDecision();
         }
@@ -103,10 +89,10 @@ namespace TradingBot
             HighLow.ApplyIndicator(this);
 
             /* Apply MacdSignal Indicator */
-            //MacdSig.ApplyIndicator(this);
+            MacdSig.ApplyIndicator(this);
 
             /* Apply Rel Str Idx Indicator */
-            //RelStrIdx.ApplyIndicator(this);
+            RelStrIdx.ApplyIndicator(this);
 
             /* Make Trade Decision */
             tradeDecision.HandleTask(this);

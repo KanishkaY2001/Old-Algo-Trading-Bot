@@ -10,7 +10,7 @@ namespace TradingBot
             stopWatch.Start();
             
             var project = ProcessFile.BackTest(
-                "./testdata/input/ETH_USDT_1D.csv",
+                "./testdata/input/BNB_ETH_USDT_1D.csv",
                 "./testdata/output/testFile.csv",
                 // [pairA, pairB, valueA, valueB, allowance, maker, taker]
                 new Portfolio("ETH","USDT",0,100,100,0.001m,0.001m)

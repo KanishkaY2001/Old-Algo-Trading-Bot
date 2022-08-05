@@ -5,8 +5,8 @@ namespace TradingBot
         public static decimal? GetPivotHighLow(Project project, bool high)
         {
             var data = project.data;
-            int left = project.leftBars;
-            int right = project.rightBars;
+            int left = project.genOpt.leftBars;
+            int right = project.genOpt.rightBars;
             int dataSize = data.Count;
 
             if (dataSize < left + right + 1)
