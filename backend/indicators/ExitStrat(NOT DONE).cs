@@ -45,6 +45,7 @@ namespace TradingBot
             */
             //Console.Write(Helper.UnixToDate())
             
+            /*
             Candle candle = project.data[project.data.Count - 1];
             var emaHigh = project.Ema("high", "high",34);
             var emaLow = project.Ema("low", "low",34);
@@ -63,7 +64,7 @@ namespace TradingBot
             }    
             
             Console.WriteLine($"{Helper.UnixToDate(candle.unix)} | {strategy}");
-
+            */
 
             /*
             // TP and SL///
