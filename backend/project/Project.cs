@@ -85,13 +85,13 @@ namespace TradingBot
         public void MakeTradeDecision()
         {
             /* Apply HiLo Indicator */
-            //HighLow.ApplyIndicator(this);
+            HighLow.ApplyIndicator(this);
 
             /* Apply MacdSignal Indicator */
-            //MacdSig.ApplyIndicator(this);
+            MacdSig.ApplyIndicator(this);
 
             /* Apply Rel Str Idx Indicator */
-            //RelStrIdx.ApplyIndicator(this);
+            RelStrIdx.ApplyIndicator(this);
 
             /* Make Trade Decision */
             tradeDecision.HandleTask(this);
