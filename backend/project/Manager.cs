@@ -9,11 +9,12 @@ namespace TradingBot
 
         public TaskHandler tradeDecHead { get; } = new TradeDecHead();
         public TaskHandler tradeDecHiLo { get; } = new TradeDecHiLo();
+        public TaskHandler tradeDecMacdS { get; } = new TradeDecMacd();
         public TaskHandler tradeDecTail { get; } = new TradeDecTail();
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecHiLo).SetNext(tradeDecTail);;
+            tradeDecHead.SetNext(tradeDecMacdS).SetNext(tradeDecTail);;
         }
     
     }

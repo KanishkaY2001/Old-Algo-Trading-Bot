@@ -2,9 +2,10 @@ namespace TradingBot
 {
     public class Project
     {
-        public int maxDataLen { get; set; } = 50; // Everything else is removed
         public List<Candle> data { get; set; } = new List<Candle>();
+        public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
+        public Queue<string> snapshots { get; set; } = new Queue<string>();
         public TaskHandler tradeDecision { get; set; }
         public string dataStreamId { get; set; } = "";
 
@@ -20,7 +21,7 @@ namespace TradingBot
             tradeDecision = decision;
             tradeDecision.HandleTask(this);
         }
-
+        
         /* Buy & Sell Methods */
         public void NormalBuy()
         {
@@ -76,23 +77,21 @@ namespace TradingBot
         /* Candle Methods */
         public void ProcessCandle(Candle candle)
         {
-            if (data.Count > maxDataLen)
-                data.RemoveAt(0);
-                
             data.Add(candle);
             MakeTradeDecision();
+            snapshots.Enqueue($"{ProcessFile.PortfolioToString(portfolio)}");
         }
 
         public void MakeTradeDecision()
         {
             /* Apply HiLo Indicator */
-            HighLow.ApplyIndicator(this);
+            //HighLow.ApplyIndicator(this);
 
             /* Apply MacdSignal Indicator */
-            MacdSig.ApplyIndicator(this);
+            //MacdSig.ApplyIndicator(this);
 
             /* Apply Rel Str Idx Indicator */
-            RelStrIdx.ApplyIndicator(this);
+            //RelStrIdx.ApplyIndicator(this);
 
             /* Make Trade Decision */
             tradeDecision.HandleTask(this);

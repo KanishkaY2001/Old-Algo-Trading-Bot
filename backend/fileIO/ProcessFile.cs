@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace TradingBot
 {
     public class ProcessFile
@@ -13,10 +11,10 @@ namespace TradingBot
             using (reader) using (writer)
             {
                 reader.ReadLine(); // skip first line
-                var portfolioSnaps = new List<string>();
-
                 writer.WriteLine(GenerateHeader());
+
                 var data = project.data;
+                var snapshots = project.snapshots;
 
                 while (!reader.EndOfStream)
                 {
@@ -26,17 +24,11 @@ namespace TradingBot
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
                     project.ProcessCandle(candle);
-
-                    /* Process File Writing */
-                    portfolioSnaps.Add(PortfolioToString(project));
-                    if (data.Count == project.maxDataLen + 1)
-                        writer.WriteLine($"{CandleToString(data[0])}{portfolioSnaps.Last()}");
                 }
 
                 for (int i = 0; i < data.Count; ++i)
                 {
-                    int snapIdx = portfolioSnaps.Count - (project.maxDataLen + 1 - i);
-                    writer.WriteLine($"{CandleToString(data[i])}{portfolioSnaps[snapIdx]}");
+                    writer.WriteLine($"{CandleToString(data[i])}{snapshots.Dequeue()}");
                 }
             }
 
@@ -87,10 +79,9 @@ namespace TradingBot
         }
 
         /* Portfolio Data to String */
-        public static string PortfolioToString(Project project)
+        public static string PortfolioToString(Portfolio p)
         {
             string output = "";
-            var p = project.portfolio;
             decimal lr = p.loss / p.allowance;
             output = $"{p.valueA:0.###},";
             output = $"{output}{p.valueB:0.###},";

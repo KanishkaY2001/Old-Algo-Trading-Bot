@@ -35,7 +35,7 @@ namespace TradingBot
             decimal[] previousArr = new decimal[4];
             int arrIdx = 0;
             int count = p.data.Count;
-            for (int i = 1; i <= count; ++i)
+            for (int i = 1; i <= Math.Min(count, p.maxDataLen); ++i)
             {
                 Candle c = p.data[count - i];
 

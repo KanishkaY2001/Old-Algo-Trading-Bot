@@ -52,9 +52,12 @@ namespace TradingBot
         {
             var info = candle.GetType().GetProperty(prop);
 
-            val = val is decimal? (decimal)val : val;
-            val = val is decimal? ? (decimal?)val : val;
-            val = val is string ? (string)val : null;
+            if (val is decimal?)
+                val = (decimal?)val;
+            else if (val is decimal)
+                val = (decimal)val;
+            else if (val is string)
+                val = (string)val;
 
             if (info == null || val == null)
                 throw new Exception($"-- Invalid Info: '{info}', or Property: '{prop}' --");
