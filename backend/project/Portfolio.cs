@@ -16,12 +16,7 @@ namespace TradingBot
         public decimal taker { get; set; }
 
         /* Profitability */
-        public decimal revenueRate { get; set; }
-        public decimal loss { get; set; }
-
-        /* Total Trades */
-        public int goodTrades { get; set; }
-        public int badTrades { get; set; }
+        public decimal allProfit { get; set; }
 
         /* Order Book-keeping */
         public decimal buyOrder { get; set; }

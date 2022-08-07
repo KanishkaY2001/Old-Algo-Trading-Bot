@@ -28,7 +28,8 @@ namespace TradingBot
 
                 for (int i = 0; i < data.Count; ++i)
                 {
-                    writer.WriteLine($"{CandleToString(data[i])}{snapshots.Dequeue()}");
+                    snapshots.TryGetValue(data[i].unix, out var snapshot);
+                    writer.WriteLine($"{CandleToString(data[i])}{snapshot}");
                 }
             }
 
@@ -43,7 +44,8 @@ namespace TradingBot
             header = $"{header},HiLo,HiLoDec"; // HiLo indicator
             header = $"{header},Macd,Signal,Histogram,MacdDec"; // Macd indicator
             header = $"{header},Rsi,RsiMa"; // Rsi Indicator
-            header = $"{header},pairA,pairB,Revenue,Loss,Profit,+Trades,-Trades"; // Portfolio
+            header = $"{header},Stoch_K,Stoch_D"; // Stoch Rsi Indicator
+            header = $"{header},pairA,pairB,Profit,AllProfit"; // Portfolio
             return header;
         }
 
@@ -75,21 +77,10 @@ namespace TradingBot
             output = $"{output}{candle.rsi:0.##},";
             output = $"{output}{candle.rsiMA:0.##},";
 
-            return output;
-        }
+            /* Stoch Rsi Info */
+            output = $"{output}{candle.K:0.##},";
+            output = $"{output}{candle.D:0.##},";
 
-        /* Portfolio Data to String */
-        public static string PortfolioToString(Portfolio p)
-        {
-            string output = "";
-            decimal lr = p.loss / p.allowance;
-            output = $"{p.valueA:0.###},";
-            output = $"{output}{p.valueB:0.###},";
-            output = $"{output}{p.revenueRate:0.###},";
-            output = $"{output}{lr:0.###},";
-            output = $"{output}{(p.revenueRate - lr):0.###},";
-            output = $"{output}{p.goodTrades},";
-            output = $"{output}{p.badTrades}";
             return output;
         }
     }

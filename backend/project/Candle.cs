@@ -33,6 +33,15 @@ namespace TradingBot
         public decimal? rsiMA { get; set; }
         public string rsiDecision { get; set; } = "-";
 
+        /* Exit Strategy Data */
+
+        // To - Do 
+
+        /* Stochastic RSI Data */
+
+        public decimal? K { get; set; }
+        public decimal? D { get; set; }
+
         public Candle(int ux, decimal op, decimal hi, decimal lo, decimal cl)
         {
             unix = ux;
