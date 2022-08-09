@@ -18,6 +18,7 @@ namespace TradingBot
         public decimal? hl { get; set; } // Trend direction
         public decimal? zz { get; set; } // Zig zag curve
         public string hilo { get; set; } = "-";
+        public string cross { get; set; } = "-";
         public string hiloDecision { get; set; } = "-";
 
         /* Macd Signal Data */

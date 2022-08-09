@@ -42,7 +42,7 @@ namespace TradingBot
             string header = "";
             header = "Date,Time,Open,High,Low,Close,FinalDecision"; // general candle
             header = $"{header},HiLo,HiLoDec"; // HiLo indicator
-            header = $"{header},Macd,Signal,Histogram,MacdDec"; // Macd indicator
+            header = $"{header},Macd,Signal,Histogram,Crossover,MacdDec"; // Macd indicator
             header = $"{header},Rsi,RsiMa"; // Rsi Indicator
             header = $"{header},Stoch_K,Stoch_D"; // Stoch Rsi Indicator
             header = $"{header},pairA,pairB,Profit,AllProfit"; // Portfolio
@@ -71,6 +71,9 @@ namespace TradingBot
             output = $"{output}{(candle.macd != null? $"{candle.macd:0.####}" : "")},";
             output = $"{output}{(candle.signal != null? $"{candle.signal:0.####}" : "")},";
             output = $"{output}{(candle.hist != null? $"{candle.hist:0.####}" : "")},";
+            output = $"{output}{candle.cross},";
+
+            //output = $"{output}{}"
             output = $"{output}{candle.macDecision},";
 
             /* RelStrIdx Info */

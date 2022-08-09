@@ -61,10 +61,11 @@ namespace TradingBot
         public static void ApplyIndicator(Project project)
         {
             var data = project.data;
-            if (data.Count == 0)
+            if (data.Count < 2)
                 return;
 
             Candle target = data.Last();
+            var prevHist = data[data.Count - 2].hist;
             var prevTarget = data.Count > 1? data[data.Count - 2] : null;
 
             var p = project.macdSOpt;
@@ -103,6 +104,13 @@ namespace TradingBot
                 target.signal = null;
 
             target.hist = target.macd - target.signal;
+
+            if (prevHist <= 0 && target.hist > 0)
+                target.cross = "green";
+
+            else if (prevHist >= 0 && target.hist < 0)
+                target.cross = "red";
+
             target.macDecision = MakeDecision(project, target);
         }
 
