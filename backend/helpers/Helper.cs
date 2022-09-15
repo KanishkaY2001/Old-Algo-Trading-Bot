@@ -6,5 +6,10 @@ namespace TradingBot
         {
             return DateTimeOffset.FromUnixTimeSeconds(unix).ToLocalTime().ToString();
         }
+
+        public static long GetUnix()
+        {
+            return DateTimeOffset.Now.ToUnixTimeSeconds();
+        }
     }
 }

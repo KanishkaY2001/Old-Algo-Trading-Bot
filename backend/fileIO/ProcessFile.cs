@@ -6,7 +6,7 @@ namespace TradingBot
         {
             var reader = new StreamReader(_in);
             var writer = new StreamWriter(_out, false);
-            var project = new Project(Manager.Global.tradeDecHead, portfolio);
+            var project = new Project(Manager.Global.tradeDecHead, portfolio, "");
 
             using (reader) using (writer)
             {

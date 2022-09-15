@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "rskx5vpPqZJ6QeNY+4uVsFLCr7qs2FEBGRN4f14BsexI6/RqWTI2ib1hH7/OBiA6NipwD9grGcmrZdqIukOaQg==",
+  "dgSpecHash": "3NPejOY+Jq9OErjOp7XOCpXd/alv/sFI3bUvAvVq5bqSaOUhN1+REdMn0B7REcMoNR5Iw+az9DrC1Vu/n2ws8Q==",
   "success": true,
-  "projectFilePath": "/home/kanishka/Desktop/Algo-Trading-Bot/Algo-Trading-Bot.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Kanishka\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
   "logs": []
 }
