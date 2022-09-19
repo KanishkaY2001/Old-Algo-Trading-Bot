@@ -24,7 +24,31 @@ namespace TradingBot
 
         public async Task<bool> AddSecurityToMarket(string market, string security)
         {
+            if (!markets.ContainsKey(market))
+                return false;
+
             return await markets[market].AddSecurity(security);
+        }
+
+
+        public void AddProject(string name, Project project)
+        {
+            if (projects.ContainsKey(name))
+                return;
+            
+            projects.Add(name, project);
+        }
+
+
+        public void UpdateProjects(Candle candle, string market)
+        {
+            foreach (var project in projects.Values)
+            {
+                if (!project.market.Equals(market))
+                    continue;
+
+                project.ProcessCandle(candle);
+            }
         }
     }
 }
