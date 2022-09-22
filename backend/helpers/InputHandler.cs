@@ -6,6 +6,7 @@ namespace TradingBot
         private static bool active = true;
         private static string invalid = "Invalid Input!";
         private static string output = "";
+        private static string prefix = "$> ";
         private static string[] markets = new string[]
         {
             "KuCoin",
@@ -16,6 +17,11 @@ namespace TradingBot
         private static void print(string input)
         {
             Console.WriteLine(input);
+        }
+
+        private static void printw(string input)
+        {
+            Console.Write(input);
         }
 
         private static void TryExit(string[] args, int len)
@@ -42,10 +48,47 @@ namespace TradingBot
                 output = "Invalid Coin-Pair";
         }
 
+        private static void TryAddProject()
+        {
+            int index = 0;
+            bool makingProject = true;
+            string[] input = new string[4];
+            string[] outputList = new string[]
+            {
+                "Project Name: ",
+                "Project Market: ",
+                "Project Coin: ",
+                "Project Pair: "
+            };
+
+            while (makingProject)
+            {
+                printw($"{prefix}{outputList[index]}");
+
+                string[] args = Console.ReadLine()!.Split();
+                if (args.Length > 1)
+                {
+                    print(invalid);
+                    continue;
+                }
+
+                input[index] = args[0];
+                ++index;
+
+                if (index == input.Length)
+                    makingProject = false;
+            }
+
+            if (manager.AddProject(input[0], input[1], input[2], input[3]))
+                output = "Successfully added project!";
+        }
+
         public static void MainLoop()
         {
             while (active)
             {
+                printw(prefix);
+
                 string[] args = Console.ReadLine()!.Split();
                 int argsLen = args.Length;
                 string command = args[0];
@@ -59,6 +102,9 @@ namespace TradingBot
                 {
                     case "e": // Exit
                         TryExit(args, argsLen);
+                        break;
+                    case "new":
+                        TryAddProject();
                         break;
                     case "cp": // Coin-Pair
                         TryAddToken(inputs, inputLen).Wait();

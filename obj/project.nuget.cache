@@ -1,10 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "3NPejOY+Jq9OErjOp7XOCpXd/alv/sFI3bUvAvVq5bqSaOUhN1+REdMn0B7REcMoNR5Iw+az9DrC1Vu/n2ws8Q==",
+  "dgSpecHash": "n6eRlhYzV3rNO0OrLM6IuWRz3kFq2qYLP7wPlysM5Eq21o1onHCpMydKejtV6nlh1PLaefJoQRA90Wf4TG8k2A==",
   "success": true,
   "projectFilePath": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Kanishka\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+    "C:\\Users\\Kanishka\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\system.reactive\\4.3.2\\system.reactive.4.3.2.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\system.threading.channels\\4.7.0\\system.threading.channels.4.7.0.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\websocket.client\\4.4.43\\websocket.client.4.4.43.nupkg.sha512"
   ],
   "logs": []
 }

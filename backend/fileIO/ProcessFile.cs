@@ -6,7 +6,8 @@ namespace TradingBot
         {
             var reader = new StreamReader(_in);
             var writer = new StreamWriter(_out, false);
-            var project = new Project(Manager.Global.tradeDecHead, portfolio, "");
+            var tradeHead = Manager.Global.tradeDecHead;
+            var project = new Project(tradeHead, portfolio, "", "", "test");
 
             using (reader) using (writer)
             {
@@ -35,6 +36,35 @@ namespace TradingBot
 
             return project;
         }
+
+
+        public static void ProcessAll(string _out, Project project)
+        {
+            var writer = new StreamWriter(_out, true);
+            using (writer)
+            {
+                for (int i = 0; i < project.data.Count; ++i)
+                {
+                    writer.WriteLine(CandleToString(project.data[i]));
+                }
+                
+            }
+            writer.Close();
+        }
+
+        public static void ProcessNext(string _out, Project project)
+        {
+            var writer = new StreamWriter(_out, true);
+            var data = project.data;
+            int idx = data.Count - 1;
+            using (writer)
+            {
+                project.snapshots.TryGetValue(data[idx].unix, out var snapshot);
+                writer.WriteLine($"{CandleToString(data[idx])}{snapshot}");
+            }
+            writer.Close();
+        }
+
 
         /* Create File Header */
         public static string GenerateHeader()

@@ -7,7 +7,9 @@ namespace TradingBot
         public Portfolio portfolio { get; set; }
         public Dictionary<long,string> snapshots = new Dictionary<long, string>();
         public TaskHandler tradeDecision { get; set; }
-        public string market { get; set; } = "";
+        public string market { get; set; }
+        public string cpCode { get; set; }
+        public string name { get; set; }
 
         /* Indicator Optimisation Storage */
         public GeneralOpt genOpt { get; set; } = new GeneralOpt();
@@ -16,11 +18,13 @@ namespace TradingBot
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
 
-        public Project(TaskHandler decision, Portfolio _portfolio, string mark)
+        public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n)
         {
-            portfolio = _portfolio;
-            tradeDecision = decision;
-            market = mark;
+            name = _n;
+            market = _m; // market
+            cpCode = _cp; // coin-pair code
+            portfolio = _p;
+            tradeDecision = _d;
             tradeDecision.HandleTask(this);
         }
         

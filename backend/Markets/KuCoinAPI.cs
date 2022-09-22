@@ -1,3 +1,4 @@
+/**
 using Newtonsoft.Json;
 
 namespace TradingBot
@@ -7,9 +8,7 @@ namespace TradingBot
         public int storageAmount { get; set; } = 200;
         public int waitTime { get; set; } = 60000; // ms (60 sec)
         public string uri { get; set; } = "https://api.kucoin.com/api";
-        public string wss { get; set; } = "wss://stream.bybit.com/spot/quote/ws/v2";
         public string market { get; set; } = "KuCoin";
-        public string code { get; set; } = "-";
         public string[] uriParams { get; set; } = new string[] {
             "/v1/market/candles?type=1min&symbol=",
             "&startAt=",
@@ -73,7 +72,7 @@ namespace TradingBot
             List<Candle> candles = new List<Candle>();
 
             // Create url and get JSON response with GET
-            string json = await RestApi.GetJson(GetUri((storageAmount * 60), "BTC-USDT"));
+            string json = await RestApi.GetJson(GetUri((storageAmount * 60), security));
 
             // Create an object from the JSON result and ensure validity
             var decerialized = JsonConvert.DeserializeObject<Kline>(json);
@@ -92,9 +91,6 @@ namespace TradingBot
             // Update project with data and add data to output file
             UpdateManager(null!, security);
 
-            WSocket.Test(wss, security);
-
-            /*
             // Start loop to collect kline data every minute
             System.Timers.Timer timer = new System.Timers.Timer(60000);
             timer.Elapsed += new System.Timers.ElapsedEventHandler(async (sender, args) => 
@@ -121,10 +117,9 @@ namespace TradingBot
             });
 
             timer.Start();
-            */
-
 
             return true;
         }
     }
 }
+*/

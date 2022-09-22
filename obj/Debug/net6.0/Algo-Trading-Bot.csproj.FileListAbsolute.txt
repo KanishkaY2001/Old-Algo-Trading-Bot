@@ -30,3 +30,6 @@ C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\obj\Debug\net6.0\Algo-Tradin
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\obj\Debug\net6.0\ref\Algo-Trading-Bot.dll
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Newtonsoft.Json.dll
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\obj\Debug\net6.0\Algo-Trading-Bot.csproj.CopyComplete
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Websocket.Client.dll
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\System.Reactive.dll
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\System.Reactive.xml
