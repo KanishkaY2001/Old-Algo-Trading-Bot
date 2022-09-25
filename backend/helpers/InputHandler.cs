@@ -24,44 +24,13 @@ namespace TradingBot
             Console.Write(input);
         }
 
-        private static void TryExit(string[] args, int len)
-        {
-            // Valid command to exit program
-            if (len == 1 && args[0].Equals("e"))
-            {
-                active = false;
-                output = "Program Exiting!";
-            }
-        }
-
-        private static async Task TryAddToken(string[] args, int len)
-        {
-            // Invalid argument or invalid market
-            if (len != 2 || !markets.Contains(args[0]))
-                return;
-                
-            // Test to ensure that Coin-Pair is valid
-            bool success = await manager.AddSecurityToMarket(args[0], args[1]);
-            if (success)
-                output = "Successfully added CoinPair to Market!";
-            else
-                output = "Invalid Coin-Pair";
-        }
-
-        private static void TryAddProject()
+        // Used when multiple inputs are requied
+        private static string[] multiInput(string[] outputList)
         {
             int index = 0;
-            bool makingProject = true;
-            string[] input = new string[4];
-            string[] outputList = new string[]
-            {
-                "Project Name: ",
-                "Project Market: ",
-                "Project Coin: ",
-                "Project Pair: "
-            };
+            string[] input = new string[outputList.Length];
 
-            while (makingProject)
+            while (true)
             {
                 printw($"{prefix}{outputList[index]}");
 
@@ -76,12 +45,54 @@ namespace TradingBot
                 ++index;
 
                 if (index == input.Length)
-                    makingProject = false;
+                    break;
             }
+
+            return input;
+        }
+
+
+        private static void TryExit(string[] args, int len)
+        {
+            // Valid command to exit program
+            if (len == 1 && args[0].Equals("e"))
+            {
+                active = false;
+                output = "Program Exiting!";
+            }
+        }
+
+        private static void TryAddProject()
+        {
+            string[] input = multiInput(new string[]
+            {
+                "Project Name: ",
+                "Project Market: ",
+                "Project Coin: ",
+                "Project Pair: "
+            });
 
             if (manager.AddProject(input[0], input[1], input[2], input[3]))
                 output = "Successfully added project!";
         }
+
+
+        private static async Task TrySubscribe()
+        {
+            string[] input = multiInput(new string[]
+            {
+                "Market Name: ",
+                "Market Coin: ",
+                "Market Pair: ",
+                "Candle Period: " // KuCoin: 1min
+            });
+
+            output = $"Successfully added {input[1]}-{input[2]} to {input[0]}!";
+            bool success = await manager.AddSecurityToMarket(input[0], input[1], input[2], input[3]);
+            if (!success)
+                output = "Invalid Coin-Pair";
+        }
+        
 
         public static void MainLoop()
         {
@@ -100,14 +111,14 @@ namespace TradingBot
 
                 switch (command)
                 {
-                    case "e": // Exit
+                    case "e": // exit program
                         TryExit(args, argsLen);
                         break;
-                    case "new":
+                    case "new": // new project
                         TryAddProject();
                         break;
-                    case "cp": // Coin-Pair
-                        TryAddToken(inputs, inputLen).Wait();
+                    case "sub": // sub to market | coinPair
+                        TrySubscribe().Wait();
                         break;
                 }
 

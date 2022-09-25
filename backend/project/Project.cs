@@ -72,13 +72,15 @@ namespace TradingBot
 
 
         /* Candle Methods */
-        public void ProcessCandle(Candle candle)
+        public void ProcessCandle(Candle candle, bool canTrade)
         {
             if (data.Count == 0)
                 snapshots.Add(candle.unix,$"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
 
             data.Add(candle);
-            MakeTradeDecision();
+            
+            if (canTrade)
+                MakeTradeDecision();
         }
 
         public void MakeTradeDecision()

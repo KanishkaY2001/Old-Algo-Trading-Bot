@@ -1,3 +1,5 @@
+using KuCoinFiles;
+
 namespace TradingBot
 {
     public sealed class Manager
@@ -23,12 +25,12 @@ namespace TradingBot
         }
 
 
-        public async Task<bool> AddSecurityToMarket(string market, string security)
+        public async Task<bool> AddSecurityToMarket(string market, string p1, string p2, string period)
         {
             if (!markets.ContainsKey(market))
                 return false;
 
-            return await markets[market].AddSecurity(security);
+            return await markets[market].AddSecurity(p1, p2, period);
         }
 
 
@@ -61,7 +63,7 @@ namespace TradingBot
             var candles = markets[_m].securities[_cp];
             for (int i = 0; i < candles.Count; ++i)
             {
-                project.data.Add(candles[i]);
+                project.ProcessCandle(candles[i], false);
             }
 
             ProcessFile.ProcessAll(_out, project);
@@ -86,7 +88,7 @@ namespace TradingBot
                 if (candle == null)
                     continue;
 
-                project.ProcessCandle(candle);
+                project.ProcessCandle(candle, true);
                 ProcessFile.ProcessNext(output, project);
             }
         }

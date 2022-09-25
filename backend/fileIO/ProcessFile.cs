@@ -24,7 +24,7 @@ namespace TradingBot
 
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
-                    project.ProcessCandle(candle);
+                    project.ProcessCandle(candle, true);
                 }
 
                 for (int i = 0; i < data.Count; ++i)
@@ -43,6 +43,7 @@ namespace TradingBot
             var writer = new StreamWriter(_out, true);
             using (writer)
             {
+                writer.WriteLine(GenerateHeader());
                 for (int i = 0; i < project.data.Count; ++i)
                 {
                     writer.WriteLine(CandleToString(project.data[i]));
@@ -57,6 +58,7 @@ namespace TradingBot
             var writer = new StreamWriter(_out, true);
             var data = project.data;
             int idx = data.Count - 1;
+
             using (writer)
             {
                 project.snapshots.TryGetValue(data[idx].unix, out var snapshot);

@@ -4,13 +4,42 @@ namespace TradingBot
 {
     class EntryPoint
     {
+
+        static void Test(double start, double next, double target)
+        {
+            Thread.Sleep(1);
+            Console.WriteLine($"Start: {next} | Target: {target}");
+
+            next = Math.Pow(next, ((start-1)/start));
+            Test(start, next, target);
+
+            /*
+            if (start != target)
+            {
+                if (start > target)
+                {
+                    start = Math.Round(start/2);
+                    Test(start, target);
+                } else
+                {
+                    start = Math.Round(((start * 2) + start)/2);
+                    Test(start, target);
+                }
+            }
+            else
+            {
+                return;
+            }
+            */
+        }
+
         static void Main(string[] args)
         {
             var manager = Manager.Global;
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            
+            //Test(40320, Math.Sqrt(40320), 4);
             InputHandler.MainLoop();
 
             /*
