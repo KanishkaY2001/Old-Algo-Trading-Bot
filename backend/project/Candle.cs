@@ -8,6 +8,7 @@ namespace TradingBot
         public decimal high { get; set; }
         public decimal low { get; set; }
         public decimal close { get; set; }
+        public decimal volume { get; set; }
 
         /* General Data */
         public decimal? pivH { get ; set; }
@@ -43,13 +44,14 @@ namespace TradingBot
         public decimal? K { get; set; }
         public decimal? D { get; set; }
 
-        public Candle(long ux, decimal op, decimal hi, decimal lo, decimal cl)
+        public Candle(long ux, decimal op, decimal hi, decimal lo, decimal cl, decimal v)
         {
             unix = ux;
             open = op;
             high = hi;
             low = lo;
             close = cl;
+            volume = v;
         }
 
         public Candle(string[] data)
@@ -61,6 +63,7 @@ namespace TradingBot
                 high = decimal.Parse(data[2]);
                 low = decimal.Parse(data[3]);
                 close = decimal.Parse(data[4]);
+                volume = decimal.Parse(data[5]);
             } catch (Exception e)
             {
                 Console.WriteLine($"-- Unable to parse: {string.Join(',',data)} --\n{e}");

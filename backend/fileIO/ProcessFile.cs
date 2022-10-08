@@ -7,7 +7,7 @@ namespace TradingBot
             var reader = new StreamReader(_in);
             var writer = new StreamWriter(_out, false);
             var tradeHead = Manager.Global.tradeDecHead;
-            var project = new Project(tradeHead, portfolio, "", "", "test");
+            var project = new Project(tradeHead, portfolio, "", "", "test", "60");
 
             using (reader) using (writer)
             {
@@ -25,6 +25,7 @@ namespace TradingBot
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
                     project.ProcessCandle(candle, true);
+                    Console.WriteLine(line);
                 }
 
                 for (int i = 0; i < data.Count; ++i)

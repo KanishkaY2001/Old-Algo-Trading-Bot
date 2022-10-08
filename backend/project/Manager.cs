@@ -21,20 +21,22 @@ namespace TradingBot
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecHiLo).SetNext(tradeDecTail);
+            tradeDecHead.SetNext(tradeDecHiLo);
+            tradeDecHiLo.SetNext(tradeDecMacdS);
+            tradeDecMacdS.SetNext(tradeDecTail);
         }
 
 
-        public async Task<bool> AddSecurityToMarket(string market, string p1, string p2, string period)
+        public async Task<bool> AddSecurityToMarket(string market, string p1, string p2)
         {
             if (!markets.ContainsKey(market))
                 return false;
 
-            return await markets[market].AddSecurity(p1, p2, period);
+            return await markets[market].AddSecurity(p1, p2);
         }
 
 
-        public bool AddProject(string name, string market, string p1, string p2)
+        public bool AddProject(string name, string market, string p1, string p2, string period)
         {
             if (projects.ContainsKey(name))
                 return false;
@@ -47,7 +49,7 @@ namespace TradingBot
             if (outputs.TryGetValue(output, out string? _name))
                 return false;
 
-            var project = new Project(tradeDecHead, p, market, cpCode, name);
+            var project = new Project(tradeDecHead, p, market, cpCode, name, period);
             outputs.Add(name, output);
             projects.Add(name, project);
 
@@ -87,9 +89,9 @@ namespace TradingBot
                 
                 if (candle == null)
                     continue;
-
-                project.ProcessCandle(candle, true);
-                ProcessFile.ProcessNext(output, project);
+                
+                if (project.ProcessCandle(candle, true))
+                    ProcessFile.ProcessNext(output, project);
             }
         }
     }

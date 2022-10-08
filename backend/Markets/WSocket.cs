@@ -16,7 +16,7 @@ namespace TradingBot
         {
             var exitEvent = new ManualResetEvent(false);
             var uri = new Uri(url);
-            
+
             using (var client = new WebsocketClient(uri))
             {
                 client.ReconnectTimeout = TimeSpan.FromSeconds(30);
@@ -24,7 +24,14 @@ namespace TradingBot
                 client.ReconnectionHappened.Subscribe
                 (info => 
                     {
-                        Console.WriteLine(($"Reconnection happened, type: {info.Type}"));
+                        Console.WriteLine($"Issue at: {Helper.UnixToDate(Helper.GetUnix())}" );
+                        if (info.Type != ReconnectionType.Initial)
+                        {
+                            Console.WriteLine(($"Reconnection happened, type: {info.Type}"));
+                            client.Send(request);
+                        }
+                            
+
                     }
                 );
 
@@ -35,10 +42,9 @@ namespace TradingBot
                         //Console.WriteLine(($"{msg}"));
                     }
                 );
-
+                
                 client.Start();
-                // in between this, I will first receive a message with the 'id' that I will need to use to send messages
-                Task.Run(() => client.Send(request));
+                client.Send(request);
                 exitEvent.WaitOne();
             }
 

@@ -10,6 +10,7 @@ namespace TradingBot
         public string market { get; set; }
         public string cpCode { get; set; }
         public string name { get; set; }
+        public int period { get; set; }
 
         /* Indicator Optimisation Storage */
         public GeneralOpt genOpt { get; set; } = new GeneralOpt();
@@ -18,15 +19,28 @@ namespace TradingBot
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
 
-        public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n)
+        public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n, string _pr)
         {
             name = _n;
             market = _m; // market
             cpCode = _cp; // coin-pair code
             portfolio = _p;
+            period = int.Parse(_pr);
             tradeDecision = _d;
             tradeDecision.HandleTask(this);
         }
+
+
+        public void AddSnap(long unix, string input)
+        {
+            if (snapshots.TryGetValue(unix, out string? d))
+            {
+                snapshots[unix] = input;
+                return;
+            }   
+            snapshots.Add(unix, input);
+        }
+
         
         /* Buy & Sell Methods */
         public void NormalBuy()
@@ -43,9 +57,10 @@ namespace TradingBot
             portfolio.valueA = buy / portfolio.buyOrder;
             portfolio.valueB -= buy;
             candle.finalDecision = "buy";
+            Console.WriteLine(candle.unix);
 
             /* Add a snapshot of the portfolio */
-            snapshots.Add(candle.unix,$"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
+            AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
         }
 
         public void NormalSell()
@@ -60,8 +75,7 @@ namespace TradingBot
             /* Add a snapshot of the portfolio */
             decimal profit = (candle.close / portfolio.buyOrder - 1) * 100;
             portfolio.allProfit += profit;
-            snapshots.Add(candle.unix,
-            $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
+            AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
         }
 
         public void EmergencySell()
@@ -72,18 +86,21 @@ namespace TradingBot
 
 
         /* Candle Methods */
-        public void ProcessCandle(Candle candle, bool canTrade)
+        public bool ProcessCandle(Candle candle, bool canTrade)
         {
-            if (data.Count == 0)
-                snapshots.Add(candle.unix,$"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
+            if (data.Count > 0)
+                if (candle.unix - data.Last().unix != period * 60)
+                    return false;
 
+            if (data.Count == 0)
+                AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
+                
             data.Add(candle);
-            
-            if (canTrade)
-                MakeTradeDecision();
+            MakeTradeDecision(canTrade);
+            return true;
         }
 
-        public void MakeTradeDecision()
+        public void MakeTradeDecision(bool canTrade)
         {
             /* Apply HiLo Indicator */
             HighLow.ApplyIndicator(this);
@@ -98,7 +115,8 @@ namespace TradingBot
             StochRsi.ApplyIndicator(this);
 
             /* Make Trade Decision */
-            tradeDecision.HandleTask(this);
+            if (canTrade)
+                tradeDecision.HandleTask(this);
         }
 
 

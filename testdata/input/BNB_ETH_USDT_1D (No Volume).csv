@@ -1,4 +1,4 @@
-time,open,high,low,close,MACD,Signal Line,Histogram,Cross
+time,open,high,low,close,MACD,Signal Line,Histogram,Cross --------------------- (no volume, won't work)
 1502928000,301.13,312.18,298,302,NaN,NaN,NaN,NaN
 1503014400,302,311.79,283.94,293.96,NaN,NaN,NaN,NaN
 1503100800,293.96,299.9,278,290.91,NaN,NaN,NaN,NaN

@@ -7,7 +7,7 @@ namespace TradingBot
         public string[] uriParams { get; set; }
         public Dictionary<string,List<Candle>> securities { get; set; }
         public void UpdateManager(Candle candle, string market);
-        public Task<bool> AddSecurity(string p1, string p2, string period);
+        public Task<bool> AddSecurity(string p1, string p2);
         public void SocketMessage(string msg);
     }
 }

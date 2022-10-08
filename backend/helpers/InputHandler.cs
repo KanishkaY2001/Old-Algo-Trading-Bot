@@ -69,10 +69,11 @@ namespace TradingBot
                 "Project Name: ",
                 "Project Market: ",
                 "Project Coin: ",
-                "Project Pair: "
+                "Project Pair: ",
+                "Project Period: "
             });
 
-            if (manager.AddProject(input[0], input[1], input[2], input[3]))
+            if (manager.AddProject(input[0], input[1], input[2], input[3], input[4]))
                 output = "Successfully added project!";
         }
 
@@ -84,13 +85,51 @@ namespace TradingBot
                 "Market Name: ",
                 "Market Coin: ",
                 "Market Pair: ",
-                "Candle Period: " // KuCoin: 1min
             });
 
             output = $"Successfully added {input[1]}-{input[2]} to {input[0]}!";
-            bool success = await manager.AddSecurityToMarket(input[0], input[1], input[2], input[3]);
+            bool success = await manager.AddSecurityToMarket(input[0], input[1], input[2]);
             if (!success)
                 output = "Invalid Coin-Pair";
+        }
+
+
+        private static async Task TryLoadConfig(string name)
+        {
+            try 
+            {
+                var reader = new StreamReader($"./testdata/config/{name}");
+                var data = new string[5];
+                int index = -1;
+                output = "Config loaded successfully!";
+
+                using (reader)
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        /* Get File Data */
+                        var line = reader.ReadLine()!;
+                        data[++index] = line;
+                    }
+                }
+
+                if (!manager.AddProject(data[0], data[1], data[2], data[3], data[4]))
+                {
+                    output = "Invalid Project Settings!";
+                }
+                else
+                {
+                    bool suc = await manager.AddSecurityToMarket(data[1], data[2], data[3]);
+                    if (!suc)
+                        output = "Invalid Market Settings!";
+                }
+            }
+            catch (IOException  err)
+            {
+                output = "File not found!";
+                Console.WriteLine(err);
+                return;
+            } 
         }
         
 
@@ -119,6 +158,10 @@ namespace TradingBot
                         break;
                     case "sub": // sub to market | coinPair
                         TrySubscribe().Wait();
+                        break;
+                    case "load":
+                        // projectName, marketName, pairA, pairB, periodTime
+                        TryLoadConfig(inputs[0]).Wait();
                         break;
                 }
 
