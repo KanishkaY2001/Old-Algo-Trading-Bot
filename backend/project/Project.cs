@@ -18,6 +18,7 @@ namespace TradingBot
         public MacdSigOpt macdSOpt { get; set; } = new MacdSigOpt(12, 26, 9);
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
+        public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3);
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n, string _pr)
         {
@@ -57,7 +58,6 @@ namespace TradingBot
             portfolio.valueA = buy / portfolio.buyOrder;
             portfolio.valueB -= buy;
             candle.finalDecision = "buy";
-            Console.WriteLine(candle.unix);
 
             /* Add a snapshot of the portfolio */
             AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
@@ -89,8 +89,10 @@ namespace TradingBot
         public bool ProcessCandle(Candle candle, bool canTrade)
         {
             if (data.Count > 0)
+            {
                 if (candle.unix - data.Last().unix != period * 60)
                     return false;
+            }
 
             if (data.Count == 0)
                 AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
@@ -113,6 +115,9 @@ namespace TradingBot
 
             /* Apply Stoch Rsi Indicator */
             StochRsi.ApplyIndicator(this);
+
+            /* Apply Chandelier Indicator */
+            Chandelier.ApplyIndicator(this);
 
             /* Make Trade Decision */
             if (canTrade)

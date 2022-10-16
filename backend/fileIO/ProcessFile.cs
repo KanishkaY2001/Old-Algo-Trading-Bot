@@ -2,12 +2,12 @@ namespace TradingBot
 {
     public class ProcessFile
     {
-        public static Project BackTest(string _in, string _out, Portfolio portfolio)
+        public static Project BackTest(string _in, string _out, Portfolio portfolio, string _p)
         {
             var reader = new StreamReader(_in);
             var writer = new StreamWriter(_out, false);
             var tradeHead = Manager.Global.tradeDecHead;
-            var project = new Project(tradeHead, portfolio, "", "", "test", "60");
+            var project = new Project(tradeHead, portfolio, "", "", "test", _p);
 
             using (reader) using (writer)
             {
@@ -25,7 +25,6 @@ namespace TradingBot
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
                     project.ProcessCandle(candle, true);
-                    Console.WriteLine(line);
                 }
 
                 for (int i = 0; i < data.Count; ++i)
@@ -74,6 +73,7 @@ namespace TradingBot
         {
             string header = "";
             header = "Date,Time,Open,High,Low,Close,FinalDecision"; // general candle
+            header = $"{header},ChEDec"; // Chandalier Exit
             header = $"{header},HiLo,HiLoDec"; // HiLo indicator
             header = $"{header},Macd,Signal,Histogram,Crossover,MacdDec"; // Macd indicator
             header = $"{header},Rsi,RsiMa"; // Rsi Indicator
@@ -95,6 +95,9 @@ namespace TradingBot
             output = $"{output}{candle.low},";
             output = $"{output}{candle.close},";
             output = $"{output}{candle.finalDecision},";
+
+            /* Chandalier Info */
+            output = $"{output}{candle.chandDecision},";
 
             /* HighLow Info */
             output = $"{output}{candle.hilo},";

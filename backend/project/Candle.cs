@@ -35,9 +35,8 @@ namespace TradingBot
         public decimal? rsiMA { get; set; }
         public string rsiDecision { get; set; } = "-";
 
-        /* Exit Strategy Data */
-
-        // To - Do 
+        /* Chandalier Exit Data */
+        public string chandDecision { get; set; } = "-";
 
         /* Stochastic RSI Data */
 
