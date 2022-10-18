@@ -30,8 +30,6 @@ namespace TradingBot
                             Console.WriteLine(($"Reconnection happened, type: {info.Type}"));
                             client.Send(request);
                         }
-                            
-
                     }
                 );
 

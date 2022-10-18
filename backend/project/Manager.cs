@@ -18,6 +18,7 @@ namespace TradingBot
         public TaskHandler tradeDecHiLo { get; } = new TradeDecHiLo();
         public TaskHandler tradeDecMacdS { get; } = new TradeDecMacd();
         public TaskHandler tradeDecTail { get; } = new TradeDecTail();
+        public bool canPlaceOrder { get; set; } = false;
 
         public Manager()
         {
@@ -91,7 +92,14 @@ namespace TradingBot
                     continue;
                 
                 if (project.ProcessCandle(candle, true))
-                    ProcessFile.ProcessNext(output, project);
+                {
+                    if (canPlaceOrder)
+                        markets[_m].PlaceOrder(candle.finalDecision);
+
+                    Task saveToFile = new Task( () => ProcessFile.ProcessNext(output, project) );
+                    saveToFile.Start();
+                }
+                    
             }
         }
     }

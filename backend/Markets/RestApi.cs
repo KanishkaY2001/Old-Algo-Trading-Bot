@@ -31,7 +31,6 @@ namespace TradingBot
 
         public static async Task<string> PostJson(string url, int uid, string body, string title)
         {
-            
             using (var client = new HttpClient())
             {
                 var endpoint = new Uri(url);
@@ -42,7 +41,6 @@ namespace TradingBot
                 var json = await client.PostAsync(endpoint, payload);
                 var result = json.Content.ReadAsStringAsync().Result;
 
-                //Console.WriteLine(result);
                 return result;
             }
         }

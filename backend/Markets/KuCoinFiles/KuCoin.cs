@@ -134,28 +134,20 @@ namespace KuCoinFiles
             {
                 case "trade.candles.update":
                     prevCandle = data.candles; // Only works for a single coin-pair, (1 market = 1 coin-pair) , need ot make this a list to add more
-                    Console.WriteLine($"Common: {data.candles[0]}");
                     break;
+
                 case "trade.candles.add":
                     // Ensure that the candle doesn't already exist
-
-                    
-                    
                     if (prevCandle[0].Equals(latestTime))
                     {
-                        Console.WriteLine("DUPLICATE---------------");
                         break;
                     }
-
                     int diff = int.Parse(data.candles[0]) - int.Parse(latestTime) - 60;
-                    Console.WriteLine(diff);
 
                     // Missing data due to socket issue or poor network connection
                     if (diff > 120)
                     {
-                        Console.WriteLine("PROVIDING DATAFILL");
                         var tempUri = GetUri(diff, data.symbol);
-                        Console.WriteLine(tempUri);
                         var candles = await getDataFill(tempUri);
                         for (int i = 0; i < candles.Count; ++i)
                         {
@@ -172,6 +164,25 @@ namespace KuCoinFiles
             }
         }
         
+
+        public void PlaceOrder(string decision)
+        {
+            switch(decision)
+            {
+                case "buy":
+                    break;
+
+                case "sell":
+                    break;
+            }
+            Console.WriteLine($"Placing Order | Decision: {decision}");
+
+            await RestApi.PostJson();
+            "/api/v1/accounts"
+            "634de79661cae50001e26504"
+            "https://api.kucoin.com/api/v1/bullet-public"
+        }
+
 
         public string createRequest(List<string> subs)
         {

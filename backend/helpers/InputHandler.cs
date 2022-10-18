@@ -131,6 +131,13 @@ namespace TradingBot
                 return;
             } 
         }
+
+
+        private static void TryStartStop(bool start)
+        {
+            output = $"Simulation Is Happening: {start}";
+            manager.canPlaceOrder = start;
+        }
         
 
         public static void MainLoop()
@@ -153,15 +160,26 @@ namespace TradingBot
                     case "e": // exit program
                         TryExit(args, argsLen);
                         break;
+
                     case "new": // new project
                         TryAddProject();
                         break;
+
                     case "sub": // sub to market | coinPair
                         TrySubscribe().Wait();
                         break;
+
                     case "load":
                         // projectName, marketName, pairA, pairB, periodTime
                         TryLoadConfig(inputs[0]).Wait();
+                        break;
+
+                    case "start":
+                        TryStartStop(true);
+                        break;
+
+                    case "stop":
+                        TryStartStop(false);
                         break;
                 }
 
