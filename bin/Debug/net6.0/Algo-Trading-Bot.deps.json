@@ -8,12 +8,53 @@
     ".NETCoreApp,Version=v6.0": {
       "Algo-Trading-Bot/1.0.0": {
         "dependencies": {
+          "Kucoin.Net": "4.1.0",
           "Newtonsoft.Json": "13.0.1",
           "Websocket.Client": "4.4.43",
           "System.Reactive.Reference": "4.3.0.0"
         },
         "runtime": {
           "Algo-Trading-Bot.dll": {}
+        }
+      },
+      "CryptoExchange.Net/5.2.2": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "3.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "3.1.0",
+          "Newtonsoft.Json": "13.0.1"
+        },
+        "runtime": {
+          "lib/netstandard2.1/CryptoExchange.Net.dll": {
+            "assemblyVersion": "5.2.2.0",
+            "fileVersion": "5.2.2.0"
+          }
+        }
+      },
+      "Kucoin.Net/4.1.0": {
+        "dependencies": {
+          "CryptoExchange.Net": "5.2.2"
+        },
+        "runtime": {
+          "lib/netstandard2.1/Kucoin.Net.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "4.1.0.0"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/3.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "3.1.0.0",
+            "fileVersion": "3.100.19.56504"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/3.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "3.1.0.0",
+            "fileVersion": "3.100.19.56504"
+          }
         }
       },
       "Newtonsoft.Json/13.0.1": {
@@ -53,6 +94,34 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "CryptoExchange.Net/5.2.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-X7s1a75oLoQxgjt3vYCydvwwv5G9MIwq2FTtS/+eFfGZArjBul6t56wEtIBAnS+QIh0bsXSoZ7MGVYWHQq/0dw==",
+      "path": "cryptoexchange.net/5.2.2",
+      "hashPath": "cryptoexchange.net.5.2.2.nupkg.sha512"
+    },
+    "Kucoin.Net/4.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bW8GGxK/3/YUt/Jk++TkDn40wRVR8WPJHAgUCUTyNlmpZZzYMkw/r2BIeDgXXZ7c7luyS/NCCUGhlLm1Zo6o8g==",
+      "path": "kucoin.net/4.1.0",
+      "hashPath": "kucoin.net.4.1.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/3.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-44rDtOf1JXXAFpNT2EXMExaDm/4OJ2RXOL9i9lE4bK427nzC7Exphv+beB6IgluyE2GIoo8zezTStMXI7MQ8WA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/3.1.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.3.1.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/3.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jjo4YXRx6MIpv6DiRxJjSpl+sPP0+5VW0clMEdLyIAz44PPwrDTFrd5PZckIxIXl1kKZ2KK6IL2nkt0+ug2MQg==",
+      "path": "microsoft.extensions.logging.abstractions/3.1.0",
+      "hashPath": "microsoft.extensions.logging.abstractions.3.1.0.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.1": {
       "type": "package",

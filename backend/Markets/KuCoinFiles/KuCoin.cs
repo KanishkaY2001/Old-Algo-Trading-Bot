@@ -1,5 +1,10 @@
 using Newtonsoft.Json;
 using TradingBot;
+using Kucoin.Net.Clients;
+using Kucoin.Net.Enums;
+using Kucoin.Net.Interfaces.Clients;
+using Kucoin.Net.Objects;
+using Microsoft.Extensions.Logging;
 
 namespace KuCoinFiles
 {
@@ -37,6 +42,7 @@ namespace KuCoinFiles
 
 
         // Rest API Information //
+        public KucoinClient client { get; set; }
         public string get { get; set; } = "https://api.kucoin.com/api";
         public string post { get; set; } = "https://api.kucoin.com/api/v1/bullet-public";
         public string[] uriParams { get; set; } = new string[] 
@@ -56,6 +62,19 @@ namespace KuCoinFiles
             ( 
                 () => socket.StartStream(wss, createRequest(socket.subs))
             );
+
+            // Store this information somewhere private (re-factor)
+            client = new KucoinClient(new KucoinClientOptions()
+            {
+                ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
+                LogLevel = LogLevel.Trace,
+                RequestTimeout = TimeSpan.FromSeconds(60),
+                FuturesApiOptions = new KucoinRestApiClientOptions
+                {
+                    ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
+                    AutoTimestamp = false
+                }
+            });
         }
 
         private async void SetupWebsocket()
@@ -165,22 +184,30 @@ namespace KuCoinFiles
         }
         
 
+        private async void orderHelper(OrderSide side)
+        {
+            var orderData = await client.SpotApi.Trading.PlaceOrderAsync
+            (
+                "ETH-USDT",
+                side,
+                NewOrderType.Market,
+                quoteQuantity: 10
+            );
+        }
+
+
         public void PlaceOrder(string decision)
         {
             switch(decision)
             {
                 case "buy":
+                    orderHelper(OrderSide.Buy);
                     break;
 
                 case "sell":
+                orderHelper(OrderSide.Sell);
                     break;
             }
-            Console.WriteLine($"Placing Order | Decision: {decision}");
-
-            await RestApi.PostJson();
-            "/api/v1/accounts"
-            "634de79661cae50001e26504"
-            "https://api.kucoin.com/api/v1/bullet-public"
         }
 
 

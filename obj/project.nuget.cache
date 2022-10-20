@@ -1,9 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "n6eRlhYzV3rNO0OrLM6IuWRz3kFq2qYLP7wPlysM5Eq21o1onHCpMydKejtV6nlh1PLaefJoQRA90Wf4TG8k2A==",
+  "dgSpecHash": "/NDci2udtasfmkdhxjg+VOnR+XLZRqbzul2uHhdpqCHsrFzzF5HCFrEc0nNoFK4ICl7omIEI4c153voJsa2rBQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Kanishka\\.nuget\\packages\\cryptoexchange.net\\5.2.2\\cryptoexchange.net.5.2.2.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\kucoin.net\\4.1.0\\kucoin.net.4.1.0.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\3.1.0\\microsoft.extensions.dependencyinjection.abstractions.3.1.0.nupkg.sha512",
+    "C:\\Users\\Kanishka\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\3.1.0\\microsoft.extensions.logging.abstractions.3.1.0.nupkg.sha512",
     "C:\\Users\\Kanishka\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
     "C:\\Users\\Kanishka\\.nuget\\packages\\system.reactive\\4.3.2\\system.reactive.4.3.2.nupkg.sha512",
     "C:\\Users\\Kanishka\\.nuget\\packages\\system.threading.channels\\4.7.0\\system.threading.channels.4.7.0.nupkg.sha512",

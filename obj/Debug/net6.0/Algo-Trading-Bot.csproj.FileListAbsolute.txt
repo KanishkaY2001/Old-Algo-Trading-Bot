@@ -33,3 +33,7 @@ C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\obj\Debug\net6.0\Algo-Tradin
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Websocket.Client.dll
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\System.Reactive.dll
 C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\System.Reactive.xml
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\CryptoExchange.Net.dll
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Kucoin.Net.dll
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\Kanishka\Documents\GitHub\Algo-Trading-Bot\bin\Debug\net6.0\Microsoft.Extensions.Logging.Abstractions.dll

@@ -23,8 +23,8 @@ namespace TradingBot
         public Manager()
         {
             tradeDecHead.SetNext(tradeDecHiLo);
-            tradeDecHiLo.SetNext(tradeDecMacdS);
-            tradeDecMacdS.SetNext(tradeDecTail);
+            tradeDecHiLo.SetNext(tradeDecTail);
+            //tradeDecMacdS.SetNext(tradeDecTail);
         }
 
 
