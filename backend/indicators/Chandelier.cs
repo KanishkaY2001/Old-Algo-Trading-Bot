@@ -21,7 +21,8 @@ namespace TradingBot
             closes = new List<decimal>();
         }
     }
-        
+
+
     public class Chandelier
     {
         private static void getRma(Project project, decimal range)
@@ -118,6 +119,25 @@ namespace TradingBot
                 return "sell";
             }
             return "-";
+        }
+    }
+
+
+    public class TradeDecChand : TaskHandler
+    {
+        public override object? HandleTask(Project project)
+        {
+            var data = project.data;
+            var candle = data.Last();
+            string prevDec = data[data.Count - 2].finalDecision;
+
+            if (candle.chandDecision.Equals("buy"))
+                project.NormalBuy();
+
+            if (prevDec.Equals("hodl") && candle.chandDecision.Equals("sell"))
+                project.NormalSell();
+
+            return base.HandleTask(project);
         }
     }
 }

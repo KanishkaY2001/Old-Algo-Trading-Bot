@@ -182,7 +182,6 @@ namespace TradingBot
                         TryStartStop(false);
                         break;
                 }
-
                 print(output);
             }
         }

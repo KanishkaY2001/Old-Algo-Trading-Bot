@@ -17,13 +17,13 @@ namespace TradingBot
         public TaskHandler tradeDecHead { get; } = new TradeDecHead();
         public TaskHandler tradeDecHiLo { get; } = new TradeDecHiLo();
         public TaskHandler tradeDecMacdS { get; } = new TradeDecMacd();
+        public TaskHandler tradeDecChand { get; } = new TradeDecChand();
         public TaskHandler tradeDecTail { get; } = new TradeDecTail();
         public bool canPlaceOrder { get; set; } = false;
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecHiLo);
-            tradeDecHiLo.SetNext(tradeDecTail);
+            tradeDecHead.SetNext(tradeDecChand).SetNext(tradeDecTail);
             //tradeDecMacdS.SetNext(tradeDecTail);
         }
 
