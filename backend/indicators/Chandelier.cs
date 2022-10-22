@@ -134,7 +134,7 @@ namespace TradingBot
             if (candle.chandDecision.Equals("buy"))
                 project.NormalBuy();
 
-            if (prevDec.Equals("hodl") && candle.chandDecision.Equals("sell"))
+            if ((prevDec.Equals("hodl") || prevDec.Equals("buy")) && candle.chandDecision.Equals("sell"))
                 project.NormalSell();
 
             return base.HandleTask(project);

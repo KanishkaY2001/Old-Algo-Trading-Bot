@@ -24,7 +24,6 @@ namespace TradingBot
         public Manager()
         {
             tradeDecHead.SetNext(tradeDecChand).SetNext(tradeDecTail);
-            //tradeDecMacdS.SetNext(tradeDecTail);
         }
 
 

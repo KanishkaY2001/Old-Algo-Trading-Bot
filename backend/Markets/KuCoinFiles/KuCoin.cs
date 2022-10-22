@@ -188,10 +188,10 @@ namespace KuCoinFiles
         {
             var orderData = await client.SpotApi.Trading.PlaceOrderAsync
             (
-                "ETH-USDT",
+                "BICO-USDT",
                 side,
                 NewOrderType.Market,
-                quoteQuantity: 10
+                quoteQuantity: 20
             );
         }
 
