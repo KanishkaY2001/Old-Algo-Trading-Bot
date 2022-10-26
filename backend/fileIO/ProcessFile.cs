@@ -38,6 +38,52 @@ namespace TradingBot
         }
 
 
+        public static void Optimize(string _in, string _out, Portfolio portfolio, string _p)
+        {
+            var reader = new StreamReader(_in);
+            //var writer = new StreamWriter(_out, false);
+            var data = new List<String>();
+            var projects = new List<Project>();
+
+            using (reader)
+            {
+                reader.ReadLine(); // skip first line
+
+                while (!reader.EndOfStream)
+                {
+                    /* Get File Data */
+                    var line = reader.ReadLine()!;
+
+                    /* Process Candle */
+                    data.Add(line);
+                }
+            }
+
+            var chandOpts = new List<ChandelierOpt>();
+            for (int i = 17; i < 27; ++i) // 17 - 27 = 10
+            {
+                for (int j = 10; j < 60; j+=5) // 1 - 5 = 10
+                {
+                    chandOpts.Add(new ChandelierOpt(i, j/10m));
+                }
+            }
+            
+            var tradeHead = Manager.Global.tradeDecHead;
+            Parallel.For(0, chandOpts.Count, i => {
+                var project = new Project(tradeHead, new Portfolio("ADA","USDT",0,100,100,0.001m,0.001m), "", "", $"test{i}", "1440");
+                project.chandalierOpt = chandOpts[i];
+                for (int j = 0; j < data.Count; ++j)
+                {
+                    project.ProcessCandle(new Candle(data[j].Split(",")), true);
+                }
+                projects.Add(project);
+                //Console.WriteLine(project.portfolio.allProfit);
+            });
+
+            
+        }
+
+
         public static void ProcessAll(string _out, Project project)
         {
             var writer = new StreamWriter(_out, true);

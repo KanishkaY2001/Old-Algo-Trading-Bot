@@ -9,6 +9,6 @@ namespace TradingBot
         public void UpdateManager(Candle candle, string market);
         public Task<bool> AddSecurity(string p1, string p2);
         public void SocketMessage(string msg);
-        public void PlaceOrder(string decision);
+        public void PlaceOrder(string decision, string coinPair);
     }
 }

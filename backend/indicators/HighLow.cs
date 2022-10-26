@@ -41,7 +41,7 @@ namespace TradingBot
 
                 if (count > i && c.hl == ehl && c.zz != null)
                 {
-                    previousArr[arrIdx] = (decimal)c.zz;
+                    previousArr[arrIdx] = c.zz ?? 0;
                     if (++arrIdx == 4)
                         break;
 
@@ -83,7 +83,7 @@ namespace TradingBot
             string hl = "-";
             if (target.hl != null && target.zz != null)
             {   
-                decimal a = (decimal)target.zz;
+                decimal a = target.zz ?? 0;
                 decimal b = previous[0];
                 decimal c = previous[1];
                 decimal d = previous[2];
@@ -154,9 +154,6 @@ namespace TradingBot
 
             else if (red && (prevDec.Equals("hodl") || prevDec.Equals("buy")) && candle.hiloDecision.Equals("sell"))
                 project.NormalSell();
-
-            else if (prevDec.Equals("hodl") || prevDec.Equals("buy"))
-                project.EmergencySell();
 
             return base.HandleTask(project);
         }

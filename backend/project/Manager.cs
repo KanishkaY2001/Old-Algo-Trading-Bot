@@ -87,13 +87,21 @@ namespace TradingBot
                 if (TryProjectFill(project, _m, _cp, output))
                     continue;
                 
+                bool ES = project.EmergencySell();
                 if (candle == null)
-                    continue;
-                
-                if (project.ProcessCandle(candle, true))
                 {
+                    if (ES && canPlaceOrder)
+                    {
+                        markets[_m].PlaceOrder("sell", _cp);
+                    }   
+                    continue;
+                }
+
+                if (ES || project.ProcessCandle(candle, true))
+                {
+                    
                     if (canPlaceOrder)
-                        markets[_m].PlaceOrder(candle.finalDecision);
+                        markets[_m].PlaceOrder(candle.finalDecision, _cp);
 
                     Task saveToFile = new Task( () => ProcessFile.ProcessNext(output, project) );
                     saveToFile.Start();

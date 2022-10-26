@@ -18,7 +18,7 @@ namespace TradingBot
         public MacdSigOpt macdSOpt { get; set; } = new MacdSigOpt(12, 26, 9);
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
-        public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3);
+        public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m);
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n, string _pr)
         {
@@ -47,7 +47,17 @@ namespace TradingBot
         public void NormalBuy()
         {
             Candle candle = data.Last();
-            portfolio.stopLoss = data[data.Count - 3].close;
+            //portfolio.stopLoss = data[data.Count - 3].close;
+            
+            if (Dummy.positionStatus.Equals("Short"))
+            {
+                portfolio.stopLoss = candle.close + candle.close * 0.1m;
+            }
+            else if (Dummy.positionStatus.Equals("Long"))
+            {
+                portfolio.stopLoss = candle.close - candle.close * 0.1m;
+            }
+            
             portfolio.buyOrder = candle.close;
 
             /* allowance allows constant buy amount at set price */
@@ -58,7 +68,10 @@ namespace TradingBot
             portfolio.valueA = buy / portfolio.buyOrder;
             portfolio.valueB -= buy;
             candle.finalDecision = "buy";
-
+            if (portfolio.buyOrder == 0)
+            {
+                Console.WriteLine("WUAWIUABDUIAWFAUGAW");
+            }
             /* Add a snapshot of the portfolio */
             AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
         }
@@ -78,10 +91,15 @@ namespace TradingBot
             AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
         }
 
-        public void EmergencySell()
+        public bool EmergencySell()
         {
+            string prevDec = data[data.Count - 2].finalDecision;
+            if (!(prevDec.Equals("hodl") || prevDec.Equals("buy")))
+                return false;
+
             if (data.Last().close < portfolio.stopLoss)
                 NormalSell();
+            return true;
         }
 
 

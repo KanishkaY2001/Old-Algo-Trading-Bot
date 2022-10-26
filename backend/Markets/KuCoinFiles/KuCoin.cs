@@ -66,12 +66,12 @@ namespace KuCoinFiles
             // Store this information somewhere private (re-factor)
             client = new KucoinClient(new KucoinClientOptions()
             {
-                ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
+                //ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
                 LogLevel = LogLevel.Trace,
                 RequestTimeout = TimeSpan.FromSeconds(60),
                 FuturesApiOptions = new KucoinRestApiClientOptions
                 {
-                    ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
+                    ApiCredentials = new KucoinApiCredentials("6359023df3f40e00018ae3ce", "5c6d3def-37d0-4b01-8a6d-b828b2509d44", "CleanSlate2001"),
                     AutoTimestamp = false
                 }
             });
@@ -138,7 +138,7 @@ namespace KuCoinFiles
 
 
         public async void SocketMessage(string msg)
-        {   
+        {
             var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
             if (decerialized == null)
                 return;
@@ -153,9 +153,14 @@ namespace KuCoinFiles
             {
                 case "trade.candles.update":
                     prevCandle = data.candles; // Only works for a single coin-pair, (1 market = 1 coin-pair) , need ot make this a list to add more
+                    Manager.Global.UpdateProjects(null, market, data.symbol);
                     break;
 
                 case "trade.candles.add":
+                    // Ensure that a previous candle is available
+                    if (prevCandle.Count == 0)
+                        prevCandle = data.candles;
+
                     // Ensure that the candle doesn't already exist
                     if (prevCandle[0].Equals(latestTime))
                     {
@@ -184,28 +189,56 @@ namespace KuCoinFiles
         }
         
 
-        private async void orderHelper(OrderSide side)
+        private async void orderHelper(OrderSide side, string coinPair)
         {
+            /*
             var orderData = await client.SpotApi.Trading.PlaceOrderAsync
             (
-                "BICO-USDT",
+                coinPair,
                 side,
                 NewOrderType.Market,
                 quoteQuantity: 20
+            );*/
+            
+            var positionResultData = await client.FuturesApi.Account.GetPositionsAsync();
+            for(int x = 0; x <= positionResultData.Data.Count(); x++)
+            {
+                if ("ETHUSDTM" == positionResultData.Data.ToList()[x].Symbol)
+                {
+                    await client.FuturesApi.Trading.PlaceOrderAsync
+                    (
+                        "ETHUSDTM",
+                        side,
+                        NewOrderType.Market,
+                        0.005m,
+                        1
+                    );
+                }
+            }
+
+            await client.FuturesApi.Trading.PlaceOrderAsync
+            (
+                "ETHUSDTM",
+                side,
+                NewOrderType.Market,
+                0.005m,
+                1
             );
         }
 
 
-        public void PlaceOrder(string decision)
+        public void PlaceOrder(string decision, string coinPair)
         {
             switch(decision)
             {
                 case "buy":
-                    orderHelper(OrderSide.Buy);
+                    Dummy.positionStatus = "Long";
+                    orderHelper(OrderSide.Buy, coinPair);
                     break;
 
                 case "sell":
-                orderHelper(OrderSide.Sell);
+                    Dummy.positionStatus = "Short";
+                    orderHelper(OrderSide.Sell, coinPair);
                     break;
             }
         }
