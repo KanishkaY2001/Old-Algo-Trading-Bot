@@ -201,7 +201,7 @@ namespace KuCoinFiles
             );*/
             
             var positionResultData = await client.FuturesApi.Account.GetPositionsAsync();
-            for(int x = 0; x <= positionResultData.Data.Count(); x++)
+            for(int x = 0; x < positionResultData.Data.Count(); x++)
             {
                 if ("ETHUSDTM" == positionResultData.Data.ToList()[x].Symbol)
                 {
