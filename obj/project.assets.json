@@ -10,10 +10,14 @@
           "Newtonsoft.Json": "13.0.1"
         },
         "compile": {
-          "lib/netstandard2.1/CryptoExchange.Net.dll": {}
+          "lib/netstandard2.1/CryptoExchange.Net.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netstandard2.1/CryptoExchange.Net.dll": {}
+          "lib/netstandard2.1/CryptoExchange.Net.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Kucoin.Net/4.1.0": {
@@ -22,37 +26,53 @@
           "CryptoExchange.Net": "5.2.2"
         },
         "compile": {
-          "lib/netstandard2.1/Kucoin.Net.dll": {}
+          "lib/netstandard2.1/Kucoin.Net.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netstandard2.1/Kucoin.Net.dll": {}
+          "lib/netstandard2.1/Kucoin.Net.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions/3.1.0": {
         "type": "package",
         "compile": {
-          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
+          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
+          "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.Logging.Abstractions/3.1.0": {
         "type": "package",
         "compile": {
-          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {}
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {}
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Newtonsoft.Json/13.0.1": {
         "type": "package",
         "compile": {
-          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
         }
       },
       "System.Reactive/4.3.2": {
@@ -70,10 +90,14 @@
       "System.Threading.Channels/4.7.0": {
         "type": "package",
         "compile": {
-          "lib/netcoreapp3.0/System.Threading.Channels.dll": {}
+          "lib/netcoreapp3.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/netcoreapp3.0/System.Threading.Channels.dll": {}
+          "lib/netcoreapp3.0/System.Threading.Channels.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Websocket.Client/4.4.43": {
@@ -83,10 +107,14 @@
           "System.Threading.Channels": "4.7.0"
         },
         "compile": {
-          "lib/net6.0/Websocket.Client.dll": {}
+          "lib/net6.0/Websocket.Client.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net6.0/Websocket.Client.dll": {}
+          "lib/net6.0/Websocket.Client.dll": {
+            "related": ".xml"
+          }
         }
       }
     }
@@ -254,23 +282,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\nares\\.nuget\\packages\\": {},
+    "C:\\Users\\Kanishka\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nares\\OneDrive\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
+      "projectUniqueName": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
       "projectName": "Algo-Trading-Bot",
-      "projectPath": "C:\\Users\\nares\\OneDrive\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
-      "packagesPath": "C:\\Users\\nares\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nares\\OneDrive\\Documents\\GitHub\\Algo-Trading-Bot\\obj\\",
+      "projectPath": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\Algo-Trading-Bot.csproj",
+      "packagesPath": "C:\\Users\\Kanishka\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Kanishka\\Documents\\GitHub\\Algo-Trading-Bot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\nares\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Kanishka\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -279,6 +307,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -316,7 +345,8 @@
           "net47",
           "net471",
           "net472",
-          "net48"
+          "net48",
+          "net481"
         ],
         "assetTargetFallback": true,
         "warn": true,
@@ -325,7 +355,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.305\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }

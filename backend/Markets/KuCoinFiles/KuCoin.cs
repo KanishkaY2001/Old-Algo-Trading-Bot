@@ -210,8 +210,8 @@ namespace KuCoinFiles
                         "DOGEUSDTM",
                         side,
                         NewOrderType.Market,
-                        2,
-                        2
+                        100,
+                        1
                     );
                 }
             }
@@ -234,10 +234,10 @@ namespace KuCoinFiles
             var x = await client.FuturesApi.Trading.PlaceOrderAsync
             (
                 "DOGEUSDTM",
-                OrderSide.Buy,
+                side,
                 NewOrderType.Market,
-                2,
-                2
+                100,
+                1
             );
         }
 
