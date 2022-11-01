@@ -201,6 +201,21 @@ namespace KuCoinFiles
             );*/
             
             var positionResultData = await client.FuturesApi.Account.GetPositionsAsync();
+            if(positionResultData.Data != null)
+            {
+                if (positionResultData.Data.Count() > 0)
+                {
+                    await client.FuturesApi.Trading.PlaceOrderAsync
+                    (
+                        "DOGEUSDTM",
+                        side,
+                        NewOrderType.Market,
+                        2,
+                        2
+                    );
+                }
+            }
+            /*
             for(int x = 0; x <= positionResultData.Data.Count(); x++)
             {
                 if ("ETHUSDTM" == positionResultData.Data.ToList()[x].Symbol)
@@ -214,15 +229,15 @@ namespace KuCoinFiles
                         1
                     );
                 }
-            }
+            }*/
 
-            await client.FuturesApi.Trading.PlaceOrderAsync
+            var x = await client.FuturesApi.Trading.PlaceOrderAsync
             (
-                "ETHUSDTM",
-                side,
+                "DOGEUSDTM",
+                OrderSide.Buy,
                 NewOrderType.Market,
-                0.005m,
-                1
+                2,
+                2
             );
         }
 
@@ -232,11 +247,13 @@ namespace KuCoinFiles
             switch(decision)
             {
                 case "buy":
+                    Console.WriteLine("BUYING");
                     Dummy.positionStatus = "Long";
                     orderHelper(OrderSide.Buy, coinPair);
                     break;
 
                 case "sell":
+                    Console.WriteLine("SELLING");
                     Dummy.positionStatus = "Short";
                     orderHelper(OrderSide.Sell, coinPair);
                     break;

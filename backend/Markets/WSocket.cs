@@ -19,7 +19,7 @@ namespace TradingBot
 
             using (var client = new WebsocketClient(uri))
             {
-                client.ReconnectTimeout = TimeSpan.FromSeconds(30);
+                client.ReconnectTimeout = TimeSpan.FromSeconds(60);
 
                 client.ReconnectionHappened.Subscribe
                 (info => 
@@ -37,7 +37,7 @@ namespace TradingBot
                 (msg => 
                     {
                         market.SocketMessage($"{msg}");
-                        //Console.WriteLine(($"{msg}"));
+                        Console.WriteLine(($"{msg}"));
                     }
                 );
                 

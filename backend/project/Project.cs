@@ -93,13 +93,17 @@ namespace TradingBot
 
         public bool EmergencySell()
         {
+            
             string prevDec = data[data.Count - 2].finalDecision;
             if (!(prevDec.Equals("hodl") || prevDec.Equals("buy")))
                 return false;
 
-            if (data.Last().close < portfolio.stopLoss)
+            if (data.Last().close < portfolio.stopLoss && portfolio.valueA != 0)
+            {
                 NormalSell();
-            return true;
+                return true;
+            }
+            return false;
         }
 
 
