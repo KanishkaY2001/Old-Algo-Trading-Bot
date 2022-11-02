@@ -205,14 +205,16 @@ namespace KuCoinFiles
             {
                 if (positionResultData.Data.Count() > 0)
                 {
-                    await client.FuturesApi.Trading.PlaceOrderAsync
+                    var y = await client.FuturesApi.Trading.PlaceOrderAsync
                     (
                         "DOGEUSDTM",
                         side,
                         NewOrderType.Market,
-                        100,
+                        1,
                         1
                     );
+                    Console.WriteLine("Y");
+                    Console.WriteLine(y.Error.Message);
                 }
             }
             /*
@@ -236,9 +238,12 @@ namespace KuCoinFiles
                 "DOGEUSDTM",
                 side,
                 NewOrderType.Market,
-                100,
+                1,
                 1
             );
+
+            Console.WriteLine("X");
+            Console.WriteLine(x.Error.Message);
         }
 
 

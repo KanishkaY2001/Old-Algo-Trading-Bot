@@ -131,10 +131,18 @@ namespace TradingBot
             var candle = data.Last();
             string prevDec = data[data.Count - 2].finalDecision;
 
+            /*
             if (!prevDec.Equals("hodl") && candle.chandDecision.Equals("buy"))
                 project.NormalBuy();
 
             else if ((prevDec.Equals("hodl") || prevDec.Equals("buy")) && candle.chandDecision.Equals("sell"))
+                project.NormalSell();
+            */
+
+            if (candle.chandDecision.Equals("buy"))
+                project.NormalBuy();
+
+            else if (candle.chandDecision.Equals("sell"))
                 project.NormalSell();
 
             return base.HandleTask(project);

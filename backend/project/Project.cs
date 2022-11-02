@@ -65,7 +65,7 @@ namespace TradingBot
             buy = portfolio.allowance != 0? buy : portfolio.valueB;
             
             /* Buy pairA using pairB */
-            portfolio.valueA = buy / portfolio.buyOrder;
+            //portfolio.valueA = buy / portfolio.buyOrder;
             portfolio.valueB -= buy;
             candle.finalDecision = "buy";
             if (portfolio.buyOrder == 0)
@@ -86,9 +86,9 @@ namespace TradingBot
             candle.finalDecision = "sell";
 
             /* Add a snapshot of the portfolio */
-            decimal profit = (candle.close / portfolio.buyOrder - 1) * 100;
-            portfolio.allProfit += profit;
-            AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
+            //decimal profit = (candle.close / portfolio.buyOrder - 1) * 100;
+            //portfolio.allProfit += profit;
+            //AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
         }
 
         public bool EmergencySell()
