@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 using TradingBot;
-using Kucoin.Net.Clients;
 using Kucoin.Net.Enums;
-using Kucoin.Net.Interfaces.Clients;
-using Kucoin.Net.Objects;
-using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Net;
+using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace KuCoinFiles
 {
@@ -26,6 +26,14 @@ namespace KuCoinFiles
             { "60" , "1hour" },
         };
 
+        // Secret Information //
+        public static string api_key = "6359023df3f40e00018ae3ce";
+        public static string api_secret = "5c6d3def-37d0-4b01-8a6d-b828b2509d44";
+        public static string api_passphrase = "CleanSlate2001";
+        public static string domain = "https://api-futures.kucoin.com";
+        public bool orderPlaced = false;
+
+
 
         // Websocket information //
         public string wss { get; set; } = "";
@@ -42,7 +50,6 @@ namespace KuCoinFiles
 
 
         // Rest API Information //
-        public KucoinClient client { get; set; }
         public string get { get; set; } = "https://api.kucoin.com/api";
         public string post { get; set; } = "https://api.kucoin.com/api/v1/bullet-public";
         public string[] uriParams { get; set; } = new string[] 
@@ -62,19 +69,6 @@ namespace KuCoinFiles
             ( 
                 () => socket.StartStream(wss, createRequest(socket.subs))
             );
-
-            // Store this information somewhere private (re-factor)
-            client = new KucoinClient(new KucoinClientOptions()
-            {
-                //ApiCredentials = new KucoinApiCredentials("634decca5777870001a98519", "27e845e3-1437-4326-884d-4aec67d5b2a1", "CleanSlate2001"),
-                LogLevel = LogLevel.Trace,
-                RequestTimeout = TimeSpan.FromSeconds(60),
-                FuturesApiOptions = new KucoinRestApiClientOptions
-                {
-                    ApiCredentials = new KucoinApiCredentials("6359023df3f40e00018ae3ce", "5c6d3def-37d0-4b01-8a6d-b828b2509d44", "CleanSlate2001"),
-                    AutoTimestamp = false
-                }
-            });
         }
 
         private async void SetupWebsocket()
@@ -188,62 +182,84 @@ namespace KuCoinFiles
             }
         }
         
-
-        private async void orderHelper(OrderSide side, string coinPair)
+        private string CreateToken(string message, string secret)
         {
-            /*
-            var orderData = await client.SpotApi.Trading.PlaceOrderAsync
-            (
-                coinPair,
-                side,
-                NewOrderType.Market,
-                quoteQuantity: 20
-            );*/
-            
-            var positionResultData = await client.FuturesApi.Account.GetPositionsAsync();
-            if(positionResultData.Data != null)
+            secret = secret ?? "";
+            var encoding = new System.Text.ASCIIEncoding();
+            byte[] keyByte = encoding.GetBytes(secret);
+            byte[] messageBytes = encoding.GetBytes(message);
+            using (var hmacsha256 = new HMACSHA256(keyByte))
             {
-                if (positionResultData.Data.Count() > 0)
-                {
-                    var y = await client.FuturesApi.Trading.PlaceOrderAsync
-                    (
-                        "DOGEUSDTM",
-                        side,
-                        NewOrderType.Market,
-                        1,
-                        1
-                    );
-                    Console.WriteLine("Y");
-                    Console.WriteLine(y.Error.Message);
-                }
+                byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
+                return Convert.ToBase64String(hashmessage);
             }
-            /*
-            for(int x = 0; x <= positionResultData.Data.Count(); x++)
-            {
-                if ("ETHUSDTM" == positionResultData.Data.ToList()[x].Symbol)
+        }
+
+        public string Result_GET(string requestPhrase)
+        {
+
+            string LocalTimestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds().ToString();
+            string str_to_sign = string.Concat(LocalTimestamp, "GET", "/api/v1/", requestPhrase);
+            string signature = CreateToken(str_to_sign, api_secret);
+            string passphrase = CreateToken(api_passphrase, api_secret);
+            string url = string.Concat(domain, "/api/v1/", requestPhrase);
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Headers.Add("KC-API-SIGN", signature);
+            request.Headers.Add("KC-API-TIMESTAMP", LocalTimestamp);
+            request.Headers.Add("KC-API-KEY", api_key);
+            request.Headers.Add("KC-API-PASSPHRASE", passphrase);
+            request.Headers.Add("KC-API-KEY-VERSION", "2");
+
+            WebResponse response = request.GetResponse();
+
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+            string str = reader.ReadLine();
+            return str;
+        }
+
+        public string Order_POST(string side, string symbol, string size, string levarage)
+        {
+            //Create my object
+            var myData = new
                 {
-                    await client.FuturesApi.Trading.PlaceOrderAsync
-                    (
-                        "ETHUSDTM",
-                        side,
-                        NewOrderType.Market,
-                        0.005m,
-                        1
-                    );
-                }
-            }*/
+                    clientOid = @"myownID1234",
+                    side = side,
+                    symbol = symbol,
+                    type = "market",
+                    size = size,
+                    leverage = levarage
+                };
 
-            var x = await client.FuturesApi.Trading.PlaceOrderAsync
-            (
-                "DOGEUSDTM",
-                side,
-                NewOrderType.Market,
-                1,
-                1
-            );
+            string jsonData = JsonConvert.SerializeObject(myData);
+            byte[] byteArray = Encoding.UTF8.GetBytes(jsonData);
 
-            Console.WriteLine("X");
-            Console.WriteLine(x.Error.Message);
+            string LocalTimestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds().ToString();
+            string str_to_sign = string.Concat(LocalTimestamp, "POST", "/api/v1/orders", jsonData);
+            string signature = CreateToken(str_to_sign, api_secret);
+            string passphrase = CreateToken(api_passphrase, api_secret);
+            string url = string.Concat(domain, "/api/v1/orders");
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Headers.Add("KC-API-SIGN", signature);
+            request.Headers.Add("KC-API-TIMESTAMP", LocalTimestamp);
+            request.Headers.Add("KC-API-KEY", api_key);
+            request.Headers.Add("KC-API-PASSPHRASE", passphrase);
+            request.Headers.Add("KC-API-KEY-VERSION", "2");
+            Console.WriteLine(passphrase);
+            Console.WriteLine(signature);
+            Console.WriteLine(url);
+
+            var reqStream = request.GetRequestStream();
+            reqStream.Write(byteArray, 0, byteArray.Length);
+
+            WebResponse response = request.GetResponse();
+
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+            string x = reader.ReadToEnd();
+            return x;
         }
 
 
@@ -253,14 +269,20 @@ namespace KuCoinFiles
             {
                 case "buy":
                     Console.WriteLine("BUYING");
-                    Dummy.positionStatus = "Long";
-                    orderHelper(OrderSide.Buy, coinPair);
+                    if (orderPlaced)
+                        JObject.Parse(Order_POST("buy", "CHZUSDTM", "5", "2"));
+                    JObject.Parse(Order_POST("buy", "CHZUSDTM", "5", "2"));
+                    Console.WriteLine("Bought");
+                    orderPlaced = true;
                     break;
 
                 case "sell":
                     Console.WriteLine("SELLING");
-                    Dummy.positionStatus = "Short";
-                    orderHelper(OrderSide.Sell, coinPair);
+                    if (orderPlaced)
+                        JObject.Parse(Order_POST("sell", "CHZUSDTM", "5", "2"));
+                    JObject.Parse(Order_POST("sell", "CHZUSDTM", "5", "2"));
+                    Console.WriteLine("Sold");
+                    orderPlaced = true;
                     break;
             }
         }
