@@ -136,7 +136,7 @@ namespace TradingBot
             RelStrIdx.ApplyIndicator(this);
 
             /* Apply Stoch Rsi Indicator */
-            StochRsi.ApplyIndicator(this);
+            //StochRsi.ApplyIndicator(this);
 
             /* Apply Chandelier Indicator */
             Chandelier.ApplyIndicator(this);

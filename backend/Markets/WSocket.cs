@@ -37,7 +37,7 @@ namespace TradingBot
                 (msg => 
                     {
                         market.SocketMessage($"{msg}");
-                        Console.WriteLine(($"{msg}"));
+                        //Console.WriteLine(($"{msg}"));
                     }
                 );
                 

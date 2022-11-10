@@ -12,7 +12,7 @@ namespace KuCoinFiles
     {
         // General Information //
         public Dictionary<string,List<Candle>> securities { get; set; }
-        public int storageAmount { get; set; } = 500;
+        public int storageAmount { get; set; } = 100;
         public string code { get; set; } = "-";
         public string market { get; set; } = "KuCoin";
         public string latestTime { get; set; } = "";
@@ -47,6 +47,12 @@ namespace KuCoinFiles
             ",\"type\": \"subscribe\", \"topic\": \"/market/candles:", // followed by string.Join(",", subs)
             "\", \"privateChannel\": false, \"response\": true}"
         };
+
+        // have this for every token.
+        // This is important because sometimes, after adding a new token, there may not be a trade.candles.update, which means prevCandle is
+        // not updated to what it should be. THis happens for coins which are not popular. If the initialUpdate doesn't happen, then we need
+        // a datafill compulsory. After the datafill, the initialUpdate has happened. Think of this like a one-off, that's required for each token.
+        public bool initialUpdate = false;
 
 
         // Rest API Information //
@@ -118,7 +124,7 @@ namespace KuCoinFiles
 
         private Candle CreateCandle(List<string> rawData)
         {
-            latestTime = rawData[0];
+            Console.WriteLine($"Previous Candle Time / Latest Time: {latestTime}");
             return new Candle(new string[]
             {
                 rawData[0],
@@ -133,6 +139,62 @@ namespace KuCoinFiles
 
         public async void SocketMessage(string msg)
         {
+
+            var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
+            if (decerialized == null) return;
+            var data = decerialized.data;
+            
+            /*
+            if (decerialized.type.Equals("welcome"))
+            {
+                id = decerialized.id; // currently, I'm sending message before this even takes effect
+            }
+            */
+            
+
+            switch (decerialized.subject)
+            {
+                case "trade.candles.update":
+                    Console.WriteLine($"PrevCandle updated: {prevCandle[0]}");
+                    prevCandle = data.candles;
+                    if (!initialUpdate) initialUpdate = true;
+                    break;
+
+                case "trade.candles.add":
+                    // Latest candle's unix time.
+                    Console.WriteLine(data.candles[0]);
+
+                    int diff = int.Parse(data.candles[0]) - int.Parse(latestTime);
+                    Console.WriteLine(diff);
+
+                    // Missing data due to socket issue or poor network connection
+                    if (diff > 120 || !initialUpdate)
+                    {
+                        if (!initialUpdate) initialUpdate = true;
+                        Console.WriteLine("Data fill required.");
+                        var tempUri = GetUri(diff, data.symbol);
+                        Console.WriteLine(tempUri);
+
+                        var candles = await getDataFill(tempUri, diff/60);
+                        for (int i = 0; i < candles.Count; ++i)
+                        {
+                            AddCandle(candles[i], data.symbol);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Adding new candle. No fill required.");
+                        Console.WriteLine(prevCandle[0]);
+                        latestTime = prevCandle[0];
+                        // Update new candle has been added:
+                        Candle newCandle = CreateCandle(prevCandle);
+                        AddCandle(newCandle, data.symbol);
+                    }
+
+                    break;
+            }
+
+            /*
             var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
             if (decerialized == null)
                 return;
@@ -152,34 +214,46 @@ namespace KuCoinFiles
 
                 case "trade.candles.add":
                     // Ensure that a previous candle is available
-                    if (prevCandle.Count == 0)
-                        prevCandle = data.candles;
+                    Console.WriteLine("ADDING..............");
+
+                    //if (prevCandle.Count == 0)
+                    //    prevCandle = data.candles;
+
+                    Console.WriteLine(prevCandle[0]);
 
                     // Ensure that the candle doesn't already exist
-                    if (prevCandle[0].Equals(latestTime))
+                    if (data.candles[0].Equals(latestTime))
                     {
+                        // This means that the current candle that came through the socket has same unix time
+                        // as the prevCandle. We want to avoid this to not have duplicate entries.
+                        Console.WriteLine("LATEST TIME ERROR");
                         break;
                     }
-                    int diff = int.Parse(data.candles[0]) - int.Parse(latestTime) - 60;
-
+                    
+                    int diff = int.Parse(data.candles[0]) - int.Parse(latestTime);
+                    Console.WriteLine(diff);
                     // Missing data due to socket issue or poor network connection
-                    if (diff > 120)
+                    if (diff > 60)
                     {
+                        Console.WriteLine("Data fill required.");
                         var tempUri = GetUri(diff, data.symbol);
                         var candles = await getDataFill(tempUri);
                         for (int i = 0; i < candles.Count; ++i)
                         {
+                            Console.WriteLine($"Adding candle: {Helper.UnixToDate(candles[i].unix)}");
                             AddCandle(candles[i], data.symbol);
                         }
                     }
                     else
                     {
+                        Console.WriteLine("Adding new candle. No fill required.");
                         // Update new candle has been added:
                         Candle newCandle = CreateCandle(prevCandle);
                         AddCandle(newCandle, data.symbol);
                     }
                     break;
             }
+            */
         }
         
         private string CreateToken(string message, string secret)
@@ -265,13 +339,16 @@ namespace KuCoinFiles
 
         public void PlaceOrder(string decision, string coinPair)
         {
+            string coin = "BALUSDTM";
+
             switch(decision)
             {
                 case "buy":
                     Console.WriteLine("BUYING");
                     if (orderPlaced)
-                        JObject.Parse(Order_POST("buy", "CHZUSDTM", "5", "2"));
-                    JObject.Parse(Order_POST("buy", "CHZUSDTM", "5", "2"));
+                        JObject.Parse(Order_POST("buy", coin, "5", "2"));
+                        
+                    JObject.Parse(Order_POST("buy", coin, "5", "2"));
                     Console.WriteLine("Bought");
                     orderPlaced = true;
                     break;
@@ -279,8 +356,8 @@ namespace KuCoinFiles
                 case "sell":
                     Console.WriteLine("SELLING");
                     if (orderPlaced)
-                        JObject.Parse(Order_POST("sell", "CHZUSDTM", "5", "2"));
-                    JObject.Parse(Order_POST("sell", "CHZUSDTM", "5", "2"));
+                        JObject.Parse(Order_POST("sell", coin, "5", "2"));
+                    JObject.Parse(Order_POST("sell", coin, "5", "2"));
                     Console.WriteLine("Sold");
                     orderPlaced = true;
                     break;
@@ -294,23 +371,34 @@ namespace KuCoinFiles
             return $"{reqParams[0]}0{reqParams[1]}{sub}{reqParams[2]}";
         }
 
-        public async Task<List<Candle>> getDataFill(string uri)
-        {
+
+        public async Task<List<Candle>> getDataFill(string uri, int expectedCount)
+        {   
             // Setup the list of candles and the amount to collect
             List<Candle> candles = new List<Candle>();
 
-            // Create url and get JSON response with GET
-            string json = await RestApi.GetJson(uri);
-
-            // Create an object from the JSON result and ensure validity
-            var decerialized = JsonConvert.DeserializeObject<Kline>(json);
-            if (decerialized == null || decerialized.data.Count == 0) 
-                return candles;
-            
-            // Loop through all KLines and create candles out of them
-            for (int i = decerialized.data.Count - 1; i >= 0; --i)
+            int actualCount = 0;
+            while (actualCount != expectedCount)
             {
-                candles.Add(CreateCandle(decerialized.data[i]));
+                Thread.Sleep(1000);
+
+                string json = await RestApi.GetJson(uri);
+                var decerialized = JsonConvert.DeserializeObject<Kline>(json);
+
+                Console.WriteLine($"Current Count: {decerialized.data.Count}");
+
+                if (expectedCount != -1)
+                    if (decerialized == null || decerialized.data.Count != expectedCount)
+                        continue;
+
+                // Loop through all KLines and create candles out of them
+                for (int i = decerialized.data.Count - 1; i > 0; --i)
+                {
+                    latestTime = decerialized.data[i][0];
+                    prevCandle = decerialized.data[i];
+                    candles.Add(CreateCandle(decerialized.data[i]));
+                }
+                actualCount = expectedCount;
             }
 
             return candles;
@@ -325,11 +413,15 @@ namespace KuCoinFiles
             if (securities.ContainsKey(secCode)) return false;
             
             // Get first datafill
-            var candles = await getDataFill(GetUri((storageAmount * 60), secCode));
+            var candles = await getDataFill(GetUri((storageAmount * 60), secCode), -1);
             if (candles.Count == 0)
                 return false;
 
             // Create the full list of candles (previous data)
+
+            // Remove the latest candle because it's not finished yet
+            //candles.RemoveAt(candles.Count - 1);
+
             securities.Add(secCode, candles);
             
             // Update project with data and add data to output file

@@ -102,9 +102,9 @@ namespace TradingBot
                     
                     if (canPlaceOrder)
                         markets[_m].PlaceOrder(candle.finalDecision, _cp);
-
-                    Task saveToFile = new Task( () => ProcessFile.ProcessNext(output, project) );
-                    saveToFile.Start();
+                    ProcessFile.ProcessNext(output, project);
+                    //Task saveToFile = new Task( () => ProcessFile.ProcessNext(output, project) );
+                    //saveToFile.Start();
                 }
                     
             }

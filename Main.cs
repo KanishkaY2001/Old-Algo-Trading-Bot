@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using KuCoinFiles;
+using Newtonsoft.Json;
 
 namespace TradingBot
 {
@@ -13,6 +15,10 @@ namespace TradingBot
 
             InputHandler.MainLoop();
 
+            //var x = new KuCoin();
+            //x.getDataFill("https://api.kucoin.com/api/v1/market/candles?type=1min&symbol=BAL-USDT&startAt=1667863075&endAt=1667863255");
+            //Console.ReadLine();
+            
             /*var project = ProcessFile.BackTest(
                 "./testdata/input/BNB_ETH_USDT_1D_new.csv",
                 "./testdata/output/testFile.csv",
