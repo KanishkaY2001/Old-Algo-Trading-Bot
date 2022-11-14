@@ -4,23 +4,30 @@ namespace TradingBot
 {
     public class WSocket
     {
-        public List<string> subs { get; set; } = new List<string>();
         public IMarket market { get; set; }
+        public WebsocketClient? client { get; set; }
 
         public WSocket(IMarket _m)
         {
             market = _m;
         }
 
+        public void StopStream()
+        {
+            if (client == null)
+                return;
+            client.Dispose();
+        }
+
         public void StartStream(string url, string request)
         {
-            var exitEvent = new ManualResetEvent(false);
             var uri = new Uri(url);
+            client = new WebsocketClient(uri);
+            ManualResetEvent exitEvent = new ManualResetEvent(false);
 
-            using (var client = new WebsocketClient(uri))
+            using (client)
             {
                 client.ReconnectTimeout = TimeSpan.FromSeconds(60);
-
                 client.ReconnectionHappened.Subscribe
                 (info => 
                     {
@@ -45,7 +52,6 @@ namespace TradingBot
                 client.Send(request);
                 exitEvent.WaitOne();
             }
-
         }
     }
 }

@@ -3,12 +3,14 @@ namespace TradingBot
     public interface IMarket
     {
         public int storageAmount { get; set; }
-        public string code { get; set; }
         public string[] uriParams { get; set; }
-        public Dictionary<string,List<Candle>> securities { get; set; }
-        public void UpdateManager(Candle candle, string market);
-        public Task<bool> AddSecurity(string p1, string p2);
+        public List<string> securities { get; set; }
+        public Dictionary<string, Order> orders { get; set; }
+        public Task<string> AddSecurity(Project project);
         public void SocketMessage(string msg);
-        public void PlaceOrder(string decision, string coinPair);
+        public void PlaceOrder(Project project, string decision, bool newPos);
+        public Candle CreateCandle(List<string> candleInfo);
+        public string GetUri(int period, int duration, string security);
+        public Task<List<Candle>> GetDataFill(string uri, int expectedCount);
     }
 }

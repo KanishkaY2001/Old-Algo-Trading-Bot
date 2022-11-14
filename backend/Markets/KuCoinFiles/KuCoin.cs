@@ -1,21 +1,19 @@
 using Newtonsoft.Json;
 using TradingBot;
-using Kucoin.Net.Enums;
 using System.Security.Cryptography;
 using System.Net;
 using System.Text;
-using Newtonsoft.Json.Linq;
 
 namespace KuCoinFiles
 {
     public class KuCoin : IMarket
     {
         // General Information //
-        public Dictionary<string,List<Candle>> securities { get; set; }
+        public List<string> securities { get; set; } = new List<string>();
+        public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
+        public Dictionary<string, Order> orders { get; set; } = new Dictionary<string, Order>();
         public int storageAmount { get; set; } = 100;
-        public string code { get; set; } = "-";
         public string market { get; set; } = "KuCoin";
-        public string latestTime { get; set; } = "";
         public Dictionary<string, string> periods { get; set; } = new Dictionary<string, string>()
         {
             { "1" , "1min" },
@@ -31,21 +29,27 @@ namespace KuCoinFiles
         public static string api_secret = "5c6d3def-37d0-4b01-8a6d-b828b2509d44";
         public static string api_passphrase = "CleanSlate2001";
         public static string domain = "https://api-futures.kucoin.com";
-        public bool orderPlaced = false;
 
 
 
         // Websocket information //
         public string wss { get; set; } = "";
         public static string id { get; set; } = "";
-        public WSocket socket { get; set; }
-        public Task socketTask { get; set; }
-        public List<string> prevCandle { get; set; } = new List<string>();
+        public WSocket ohlcSocket { get; set; }
+        public Task ohlcSocketTask { get; set; }
+        public WSocket markSocket { get; set; }
+        public Task markSocketTask { get; set; }
         public string[] reqParams { get; set; } = new string[]
         {
             "{ \"id\": ", // followed by id
             ",\"type\": \"subscribe\", \"topic\": \"/market/candles:", // followed by string.Join(",", subs)
             "\", \"privateChannel\": false, \"response\": true}"
+        };
+        public string[] markParams { get; set; } = new string[]
+        {
+            "{ \"id\": ",
+            ",\"type\": \"subscribe\", \"topic\": \"/contractMarket/tickerV2:",
+            "\", \"response\": true}"
         };
 
         // have this for every token.
@@ -58,23 +62,55 @@ namespace KuCoinFiles
         // Rest API Information //
         public string get { get; set; } = "https://api.kucoin.com/api";
         public string post { get; set; } = "https://api.kucoin.com/api/v1/bullet-public";
+
+        /*
         public string[] uriParams { get; set; } = new string[] 
         {
             "/v1/market/candles?type=1min&symbol=",
+            "&startAt=",
+            "&endAt="
+        };*/
+        public string[] uriParams { get; set; } = new string[] 
+        {
+            "/v1/market/candles?type=", // 1, 3, 5 (minutes)
+            "min&symbol=",
             "&startAt=",
             "&endAt="
         };
         
         public KuCoin()
         {
-            securities = new Dictionary<string,List<Candle>>();
             SetupWebsocket();
-            socket = new WSocket(this);
+            ohlcSocket = new WSocket(this);
+            markSocket = new WSocket(this);
+            ohlcSocketTask = new Task( () => ohlcSocket.StartStream(wss, createOhlcRequest()));
+            markSocketTask = new Task( () => markSocket.StartStream(wss, createMarkRequest()));
+        }
 
-            socketTask = new Task
-            ( 
-                () => socket.StartStream(wss, createRequest(socket.subs))
-            );
+        public void RestartSocketTask()
+        {
+            // Dispose the old socket task and create a new task with updated URI
+            if (!(ohlcSocketTask.Status == TaskStatus.Running))
+                return;
+
+            ohlcSocket.StopStream();
+            markSocket.StopStream();
+            ohlcSocketTask = new Task( () => ohlcSocket.StartStream(wss, createOhlcRequest()));
+            markSocketTask = new Task( () => markSocket.StartStream(wss, createMarkRequest()));
+        }
+
+        public string createOhlcRequest()
+        {
+            string sub = string.Join(",", securities);
+            return $"{reqParams[0]}0{reqParams[1]}{sub}{reqParams[2]}";
+        }
+
+        public string createMarkRequest()
+        {
+            List<string> subs = new List<string>();
+            string sub = string.Join(",", futureSecurities.Select(x => x.Key));
+            Console.WriteLine(sub);
+            return $"{markParams[0]}0{markParams[1]}{sub}{markParams[2]}";
         }
 
         private async void SetupWebsocket()
@@ -86,45 +122,13 @@ namespace KuCoinFiles
                 Console.WriteLine("Failed to initialize KuCoin!");
                 System.Environment.Exit(1);
             } 
-
             var data = decerialized.data;
             var servers = data.instanceServers;
             wss = $"{servers[0].endpoint}?token={data.token}";
         }
 
-
-        private string GetUri(int duration, string security)
+        public Candle CreateCandle(List<string> rawData)
         {
-            long to = Helper.GetUnix();
-            long from = to - duration;
-            return $"{get}{uriParams[0]}{security}{uriParams[1]}{from}{uriParams[2]}{to}";
-        }
-
-
-        public void UpdateManager(Candle candle, string security)
-        {
-            Manager.Global.UpdateProjects(candle, market, security);
-        }
-
-
-        private void AddCandle(Candle candle, string security)
-        {
-            var securityData = securities[security];
-            // Adds the next candle
-            if (securityData.Count == storageAmount)
-            {
-                securityData.RemoveAt(0);
-            }
-            securityData.Add(candle);
-
-            // Update the manager with new info
-            UpdateManager(candle, security);
-        }
-
-
-        private Candle CreateCandle(List<string> rawData)
-        {
-            Console.WriteLine($"Previous Candle Time / Latest Time: {latestTime}");
             return new Candle(new string[]
             {
                 rawData[0],
@@ -139,121 +143,36 @@ namespace KuCoinFiles
 
         public async void SocketMessage(string msg)
         {
-
+            
             var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
             if (decerialized == null) return;
             var data = decerialized.data;
             
-            /*
             if (decerialized.type.Equals("welcome"))
-            {
                 id = decerialized.id; // currently, I'm sending message before this even takes effect
-            }
-            */
             
-
-            switch (decerialized.subject)
-            {
-                case "trade.candles.update":
-                    Console.WriteLine($"PrevCandle updated: {prevCandle[0]}");
-                    prevCandle = data.candles;
-                    if (!initialUpdate) initialUpdate = true;
-                    break;
-
-                case "trade.candles.add":
-                    // Latest candle's unix time.
-                    Console.WriteLine(data.candles[0]);
-
-                    int diff = int.Parse(data.candles[0]) - int.Parse(latestTime);
-                    Console.WriteLine(diff);
-
-                    // Missing data due to socket issue or poor network connection
-                    if (diff > 120 || !initialUpdate)
-                    {
-                        if (!initialUpdate) initialUpdate = true;
-                        Console.WriteLine("Data fill required.");
-                        var tempUri = GetUri(diff, data.symbol);
-                        Console.WriteLine(tempUri);
-
-                        var candles = await getDataFill(tempUri, diff/60);
-                        for (int i = 0; i < candles.Count; ++i)
-                        {
-                            AddCandle(candles[i], data.symbol);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Adding new candle. No fill required.");
-                        Console.WriteLine(prevCandle[0]);
-                        latestTime = prevCandle[0];
-                        // Update new candle has been added:
-                        Candle newCandle = CreateCandle(prevCandle);
-                        AddCandle(newCandle, data.symbol);
-                    }
-
-                    break;
-            }
-
-            /*
-            var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
-            if (decerialized == null)
+            if (!decerialized.type.Equals("message"))
                 return;
-            var data = decerialized.data;
 
-            if (decerialized.type.Equals("welcome"))
-            {
-                id = decerialized.id; // currently, I'm sending message before this even takes effect
-            }
-            
+            string candleCode = decerialized.topic.Split(":")[1];
+
             switch (decerialized.subject)
             {
                 case "trade.candles.update":
-                    prevCandle = data.candles; // Only works for a single coin-pair, (1 market = 1 coin-pair) , need ot make this a list to add more
-                    Manager.Global.UpdateProjects(null, market, data.symbol);
+                    Manager.Global.UpdateLatestCandle(market, candleCode, data.candles);
                     break;
 
                 case "trade.candles.add":
-                    // Ensure that a previous candle is available
-                    Console.WriteLine("ADDING..............");
-
-                    //if (prevCandle.Count == 0)
-                    //    prevCandle = data.candles;
-
-                    Console.WriteLine(prevCandle[0]);
-
-                    // Ensure that the candle doesn't already exist
-                    if (data.candles[0].Equals(latestTime))
-                    {
-                        // This means that the current candle that came through the socket has same unix time
-                        // as the prevCandle. We want to avoid this to not have duplicate entries.
-                        Console.WriteLine("LATEST TIME ERROR");
-                        break;
-                    }
-                    
-                    int diff = int.Parse(data.candles[0]) - int.Parse(latestTime);
-                    Console.WriteLine(diff);
-                    // Missing data due to socket issue or poor network connection
-                    if (diff > 60)
-                    {
-                        Console.WriteLine("Data fill required.");
-                        var tempUri = GetUri(diff, data.symbol);
-                        var candles = await getDataFill(tempUri);
-                        for (int i = 0; i < candles.Count; ++i)
-                        {
-                            Console.WriteLine($"Adding candle: {Helper.UnixToDate(candles[i].unix)}");
-                            AddCandle(candles[i], data.symbol);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Adding new candle. No fill required.");
-                        // Update new candle has been added:
-                        Candle newCandle = CreateCandle(prevCandle);
-                        AddCandle(newCandle, data.symbol);
-                    }
+                    string uriCode = candleCode.Split("_")[0];
+                    await Manager.Global.AddNewCandle(market, candleCode, uriCode, data.candles);
+                    break;
+                
+                case "tickerV2":
+                    decimal ask = decimal.Parse(data.bestAskPrice);
+                    decimal bid = decimal.Parse(data.bestBidPrice);
+                    Manager.Global.UpdateLatestMark(market, futureSecurities[candleCode], ask, bid);
                     break;
             }
-            */
         }
         
         private string CreateToken(string message, string secret)
@@ -271,12 +190,12 @@ namespace KuCoinFiles
 
         public string Result_GET(string requestPhrase)
         {
-
             string LocalTimestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds().ToString();
             string str_to_sign = string.Concat(LocalTimestamp, "GET", "/api/v1/", requestPhrase);
             string signature = CreateToken(str_to_sign, api_secret);
             string passphrase = CreateToken(api_passphrase, api_secret);
             string url = string.Concat(domain, "/api/v1/", requestPhrase);
+            Console.WriteLine(url);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Headers.Add("KC-API-SIGN", signature);
@@ -286,18 +205,16 @@ namespace KuCoinFiles
             request.Headers.Add("KC-API-KEY-VERSION", "2");
 
             WebResponse response = request.GetResponse();
-
             StreamReader reader = new StreamReader(response.GetResponseStream());
-            string str = reader.ReadLine();
-            return str;
+            return reader.ReadLine()!;
         }
 
-        public string Order_POST(string side, string symbol, string size, string levarage)
+        public async Task<string> Order_POST(string cli, string side, string symbol, string size, string levarage)
         {
             //Create my object
             var myData = new
                 {
-                    clientOid = @"myownID1234",
+                    clientOid = cli,
                     side = side,
                     symbol = symbol,
                     type = "market",
@@ -313,6 +230,7 @@ namespace KuCoinFiles
             string signature = CreateToken(str_to_sign, api_secret);
             string passphrase = CreateToken(api_passphrase, api_secret);
             string url = string.Concat(domain, "/api/v1/orders");
+            Console.WriteLine(url);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
@@ -322,57 +240,85 @@ namespace KuCoinFiles
             request.Headers.Add("KC-API-KEY", api_key);
             request.Headers.Add("KC-API-PASSPHRASE", passphrase);
             request.Headers.Add("KC-API-KEY-VERSION", "2");
-            Console.WriteLine(passphrase);
-            Console.WriteLine(signature);
-            Console.WriteLine(url);
 
             var reqStream = request.GetRequestStream();
             reqStream.Write(byteArray, 0, byteArray.Length);
-
-            WebResponse response = request.GetResponse();
-
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            string x = reader.ReadToEnd();
-            return x;
-        }
-
-
-        public void PlaceOrder(string decision, string coinPair)
-        {
-            string coin = "BALUSDTM";
-
-            switch(decision)
+            try
             {
-                case "buy":
-                    Console.WriteLine("BUYING");
-                    if (orderPlaced)
-                        JObject.Parse(Order_POST("buy", coin, "5", "2"));
-                        
-                    JObject.Parse(Order_POST("buy", coin, "5", "2"));
-                    Console.WriteLine("Bought");
-                    orderPlaced = true;
-                    break;
-
-                case "sell":
-                    Console.WriteLine("SELLING");
-                    if (orderPlaced)
-                        JObject.Parse(Order_POST("sell", coin, "5", "2"));
-                    JObject.Parse(Order_POST("sell", coin, "5", "2"));
-                    Console.WriteLine("Sold");
-                    orderPlaced = true;
-                    break;
+                WebResponse response = request.GetResponse();
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                POrderRoot decerialized = JsonConvert.DeserializeObject<POrderRoot>(reader.ReadToEnd())!;
+                return decerialized.data.orderId;
+            }
+            catch (WebException exception)
+            {
+                Console.WriteLine($"{exception.Message}  ...  RETRYING...");
+                Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
+                return await Order_POST(cli, side, symbol, size, levarage);
             }
         }
 
 
-        public string createRequest(List<string> subs)
+        public async void PlaceOrder(Project project, string decision, bool newPos)
         {
-            string sub = string.Join(",", subs);
-            return $"{reqParams[0]}0{reqParams[1]}{sub}{reqParams[2]}";
+            string pA = project.portfolio.pairA;
+            string pB = project.portfolio.pairB;
+            string coin = $"{pA}{pB}M";
+
+            Console.WriteLine("Here...");
+            Console.WriteLine(decision);
+            if (!(decision.Equals("sell") || decision.Equals("buy")))
+                return;
+            Console.WriteLine("Here...4");
+
+            string uniqueCLI = "";
+            Random rnd = new Random();
+            while (uniqueCLI.Equals(""))
+            {
+                string tempCLI = $"JoNaKaNy{rnd.Next()}{rnd.Next()}";
+                Console.WriteLine(tempCLI);
+                if (orders.TryGetValue(tempCLI, out Order? order))
+                    continue;
+                // Once a unique client order ID has been made, exit
+                uniqueCLI = tempCLI;
+            }
+
+            // Close the previous position, if any
+            if (!project.clientId.Equals("") && orders.Remove(project.clientId))
+                await Order_POST(uniqueCLI, decision, coin, "3", "1");
+            
+            Console.WriteLine("Here...2");
+            if (!newPos)
+                return;
+
+            Console.WriteLine("Here..3");
+            Console.WriteLine(uniqueCLI);
+
+            // Open a new position
+            string orderId = await Order_POST(uniqueCLI, decision, coin, "3", "1");
+            if (orderId.Equals(""))
+                return; // I think this happens if the account doesn't have sufficient funds.
+
+            string orderInfo = Result_GET($"orders/{orderId}");
+            Console.WriteLine(orderInfo);
+            var data = JsonConvert.DeserializeObject<GOrderRoot>(orderInfo)!.data;
+            decimal entry = decimal.Parse(data.value) / data.size;
+
+            // Add new order to orders dictionary and remove old one, if any
+            orders.Add(uniqueCLI, new Order(entry, data.size, data.leverage, decision));
+            project.clientId = uniqueCLI;
         }
 
 
-        public async Task<List<Candle>> getDataFill(string uri, int expectedCount)
+        public string GetUri(int period, int duration, string security)
+        {
+            long to = Helper.GetUnix();
+            long from = to - duration;
+            return $"{get}{uriParams[0]}{period}{uriParams[1]}{security}{uriParams[2]}{from}{uriParams[3]}{to}";
+        }
+
+
+        public async Task<List<Candle>> GetDataFill(string uri, int expectedCount)
         {   
             // Setup the list of candles and the amount to collect
             List<Candle> candles = new List<Candle>();
@@ -385,54 +331,49 @@ namespace KuCoinFiles
                 string json = await RestApi.GetJson(uri);
                 var decerialized = JsonConvert.DeserializeObject<Kline>(json);
 
-                Console.WriteLine($"Current Count: {decerialized.data.Count}");
-
-                if (expectedCount != -1)
-                    if (decerialized == null || decerialized.data.Count != expectedCount)
-                        continue;
+                if (decerialized == null)
+                    continue;
+                else if (expectedCount != -1 && decerialized.data.Count != expectedCount)
+                    continue;
 
                 // Loop through all KLines and create candles out of them
                 for (int i = decerialized.data.Count - 1; i > 0; --i)
-                {
-                    latestTime = decerialized.data[i][0];
-                    prevCandle = decerialized.data[i];
                     candles.Add(CreateCandle(decerialized.data[i]));
-                }
+
                 actualCount = expectedCount;
             }
-
             return candles;
         }
 
-
-        public async Task<bool> AddSecurity(string p1, string p2)
+        // return the candle code for the market-coin-pair
+        public async Task<string> AddSecurity(Project project)
         {
-            string secCode = $"{p1}{code}{p2}";
-            
-            // Ensure that the security doesn't already exist
-            if (securities.ContainsKey(secCode)) return false;
-            
-            // Get first datafill
-            var candles = await getDataFill(GetUri((storageAmount * 60), secCode), -1);
+            int period = project.period;
+            string coin = project.portfolio.pairA;
+            string pair = project.portfolio.pairB;
+            string candleCode = $"{coin}-{pair}_{periods[$"{period}"]}";
+
+            // Ensure that the coin-pair_period doesn't already exist
+            if (securities.Contains(candleCode)) return "";
+
+            // Get initial DataFill for candle data
+            var candles = await GetDataFill(GetUri(period, (storageAmount * period * 60), $"{coin}-{pair}"), -1);
             if (candles.Count == 0)
-                return false;
-
-            // Create the full list of candles (previous data)
-
-            // Remove the latest candle because it's not finished yet
-            //candles.RemoveAt(candles.Count - 1);
-
-            securities.Add(secCode, candles);
+                    return "";
             
-            // Update project with data and add data to output file
-            UpdateManager(null!, secCode);
+            // Store the code, update project with data and add data to output file
+            securities.Add(candleCode);
+            futureSecurities.Add($"{coin}{pair}M", candleCode);
+            Manager.Global.TryProjectFill(project, candles);
+            
+            // Reset existing socket task
+            RestartSocketTask();
 
-            // Start websocket stream
-            socket.subs.Add($"{secCode}_{periods["1"]}");
+            // Start the socket task (stream will resume)
+            ohlcSocketTask.Start();
+            markSocketTask.Start();
 
-            // Start the socket task
-            socketTask.Start();
-            return true;
+            return candleCode;
         }
     }
 }

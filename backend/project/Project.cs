@@ -3,14 +3,18 @@ namespace TradingBot
     public class Project
     {
         public List<Candle> data { get; set; } = new List<Candle>();
+        public List<string> latestCandle { get; set; } = new List<string>();
+        public string clientId { get; set; } = "";
+        public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
         public Dictionary<long,string> snapshots = new Dictionary<long, string>();
         public TaskHandler tradeDecision { get; set; }
         public string market { get; set; }
-        public string cpCode { get; set; }
+        public string candleCode { get; set; } = "";
         public string name { get; set; }
         public int period { get; set; }
+        public bool initialUpdate { get; set; }
 
         /* Indicator Optimisation Storage */
         public GeneralOpt genOpt { get; set; } = new GeneralOpt();
@@ -20,13 +24,12 @@ namespace TradingBot
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
         public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m);
 
-        public Project(TaskHandler _d, Portfolio _p, string _m, string _cp, string _n, string _pr)
+        public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
         {
             name = _n;
             market = _m; // market
-            cpCode = _cp; // coin-pair code
             portfolio = _p;
-            period = int.Parse(_pr);
+            period = _pr;
             tradeDecision = _d;
             tradeDecision.HandleTask(this);
         }
@@ -91,25 +94,11 @@ namespace TradingBot
             //AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
         }
 
-        public bool EmergencySell()
-        {
-            
-            string prevDec = data[data.Count - 2].finalDecision;
-            if (!(prevDec.Equals("hodl") || prevDec.Equals("buy")))
-                return false;
-
-            if (data.Last().close < portfolio.stopLoss && portfolio.valueA != 0)
-            {
-                NormalSell();
-                return true;
-            }
-            return false;
-        }
-
 
         /* Candle Methods */
         public bool ProcessCandle(Candle candle, bool canTrade)
         {
+            // Data fill is consistent (time spacing)
             if (data.Count > 0)
             {
                 if (candle.unix - data.Last().unix != period * 60)
@@ -144,6 +133,24 @@ namespace TradingBot
             /* Make Trade Decision */
             if (canTrade)
                 tradeDecision.HandleTask(this);
+
+            /*\
+            if (data.Count() < 2)
+                return;
+
+            var candle = data[data.Count - 2];
+            Console.WriteLine(candle.finalDecision);
+            Console.WriteLine("-------------------");
+            if (candle.finalDecision.Equals("-") || candle.finalDecision.Equals("hodl") || candle.finalDecision.Equals("sell"))
+            {
+                data[data.Count - 1].finalDecision = "buy";
+            }
+            else
+            {
+                data[data.Count - 1].finalDecision = "sell";
+            }
+            Console.WriteLine(candle.finalDecision);
+            */
         }
 
 

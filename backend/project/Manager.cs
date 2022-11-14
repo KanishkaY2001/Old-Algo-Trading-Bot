@@ -27,86 +27,172 @@ namespace TradingBot
         }
 
 
-        public async Task<bool> AddSecurityToMarket(string market, string p1, string p2)
+        public async Task<bool> AddSecurityToMarket(Project project)
         {
+            string market = project.market;
             if (!markets.ContainsKey(market))
                 return false;
 
-            return await markets[market].AddSecurity(p1, p2);
+            string candleCode = await markets[market].AddSecurity(project);
+            if (candleCode.Equals(""))
+                return false;
+
+            project.candleCode = candleCode;
+            return true;
         }
 
 
-        public bool AddProject(string name, string market, string p1, string p2, string period)
+        public bool RemoveProject(string name)
+        {
+            if (projects.TryGetValue(name, out var project))
+            {
+                projects.Remove(name);
+                outputs.Remove(name);
+                return true;
+            }
+            return false;
+        }
+
+
+        public bool AddProject(string name, string market, string p1, string p2, int period)
         {
             if (projects.ContainsKey(name))
                 return false;
 
-            var p = new Portfolio(p1, p2, 0, 100, 100, 0.001m, 0.001m);
-            string cpCode = $"{p1}{markets[market].code}{p2}";
+            var p = new Portfolio(p1, p2, 0, 100, 100, 0.001m, 0.001m); // these are default values, not ones that reflect the account (change this)
             string output = $"{filePath}{name}_{market}_{p1}_{p2}.csv";
             
             // Project with given name already exists with the market, and coin-pair
             if (outputs.TryGetValue(output, out string? _name))
                 return false;
 
-            var project = new Project(tradeDecHead, p, market, cpCode, name, period);
+            var project = new Project(tradeDecHead, p, market, name, period);
             outputs.Add(name, output);
             projects.Add(name, project);
-
             return true;
         }
 
+
         // If no data exists within the project, fill data with Market Coin-Pair data
-        public bool TryProjectFill(Project project, string _m, string _cp, string _out)
+        public bool TryProjectFill(Project project, List<Candle> candles)
         {
             if (project.data.Count != 0)
                 return false;
             
-            var candles = markets[_m].securities[_cp];
             for (int i = 0; i < candles.Count; ++i)
-            {
                 project.ProcessCandle(candles[i], false);
-            }
 
-            ProcessFile.ProcessAll(_out, project);
+            ProcessFile.ProcessAll(outputs[project.name], project);
             return true;
         }
 
-        // Add new Coin-Pair data every X time from the market
-        public void UpdateProjects(Candle? candle, string _m, string _cp)
+
+        public void UpdateLatestCandle(string market, string candleCode, List<string> latestCandle)
         {
             foreach (var project in projects.Values)
             {
-                if (!project.market.Equals(_m))
+                if (!project.market.Equals(market))
                     continue;
 
-                if (!project.cpCode.Equals(_cp))
+                if (!project.candleCode.Equals(candleCode))
                     continue;
 
-                string output = outputs[project.name];
-                if (TryProjectFill(project, _m, _cp, output))
+                if (!project.initialUpdate) project.initialUpdate = true;
+
+                project.latestCandle = latestCandle;
+            }
+        }
+
+
+        public void UpdateLatestMark(string market, string candleCode, decimal askPrice, decimal bidPrice)
+        {
+            foreach (var project in projects.Values)
+            {
+                if (!project.market.Equals(market))
+                    continue;
+
+                if (!project.candleCode.Equals(candleCode))
                     continue;
                 
-                bool ES = project.EmergencySell();
-                if (candle == null)
-                {
-                    if (ES && canPlaceOrder)
-                    {
-                        markets[_m].PlaceOrder("sell", _cp);
-                    }   
+                // DO EMERGENCY SELL STUFF:
+                if(!markets[market].orders.TryGetValue(project.clientId, out var order))
                     continue;
-                }
 
-                if (ES || project.ProcessCandle(candle, true))
+                decimal entry = order.entry;
+                decimal percentChange = (askPrice - entry) / entry;
+                string tempSide = "sell";
+
+                if (order.side.Equals("sell"))
                 {
-                    
-                    if (canPlaceOrder)
-                        markets[_m].PlaceOrder(candle.finalDecision, _cp);
-                    ProcessFile.ProcessNext(output, project);
-                    //Task saveToFile = new Task( () => ProcessFile.ProcessNext(output, project) );
-                    //saveToFile.Start();
+                    percentChange = -1 * ((askPrice - entry) / entry);
+                    tempSide = "buy";
+                }
+                
+                Console.WriteLine($"Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%  |  Bid: [{bidPrice}]");
+                decimal limit = 0.02m;
+                /*
+                1 = 100%
+                0.1 = 10%
+                0.01 = 1%
+                0.001 = 0.1%
+                */
+                if (percentChange < limit) // rn: 0.1 (1%), has to be 0.02 (2%)
+                    continue;
+                
+                Candle latest = project.data[project.data.Count - 1];
+                latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                markets[market].PlaceOrder(project, tempSide, false);
+            }
+        }
+
+        public async Task AddNewCandle(string market, string candleCode, string uriCode, List<string> latestCandle)
+        {
+            foreach (var project in projects.Values)
+            {
+                if (!project.market.Equals(market))
+                    continue;
+
+                if (!project.candleCode.Equals(candleCode))
+                    continue;
+                
+                int latestTime = (int)project.data[project.data.Count - 1].unix;
+                int diff = int.Parse(latestCandle[0]) - latestTime;
+                int period = project.period;
+
+                // Missing data due to socket issue or poor network connection
+                if (diff > (60 * period * 2) || !project.initialUpdate)
+                {
+                    Console.WriteLine("Data fill required.");
+                    if (!project.initialUpdate) project.initialUpdate = true;
+
+                    string tempUri = markets[market].GetUri(period, diff, uriCode);
+                    var candles = await markets[market].GetDataFill(tempUri, diff/(60 * period));
+                    for (int i = 0; i < candles.Count; ++i)
+                    {
+                        bool placeOrder = i == candles.Count - 1 ? true : false;
+                        AddNewCandleHelper(project, candles[i], placeOrder);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No data fill needed.");
+                    Candle newCandle = markets[market].CreateCandle(project.latestCandle);
+                    AddNewCandleHelper(project, newCandle, true);
+                }
+            }
+        }
+
+        public void AddNewCandleHelper(Project project, Candle candle, bool placeOrder)
+        {
+            if (project.ProcessCandle(candle, true))
+            {
+                if (canPlaceOrder && placeOrder)
+                {
+                    markets[project.market].PlaceOrder(project, candle.finalDecision, true);
                 }
                     
+
+                ProcessFile.ProcessNext(outputs[project.name], project);
             }
         }
     }

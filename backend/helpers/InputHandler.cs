@@ -47,7 +47,6 @@ namespace TradingBot
                 if (index == input.Length)
                     break;
             }
-
             return input;
         }
 
@@ -62,44 +61,57 @@ namespace TradingBot
             }
         }
 
-        private static void TryAddProject()
+        private static async Task<bool> TryAddProject(string[] input)
         {
-            string[] input = multiInput(new string[]
+            // Get array of input values and assign proper name for them
+            output = "Invalid period format provided";
+            string name = input[0];
+            string market = input[1];
+            string coin = input[2];
+            string pair = input[3];
+            if (!int.TryParse(input[4], out int period))
+                return false;
+            
+            // Attempt to create the project and add it to the manager
+            Random rnd = new Random();
+            int num = 0;
+            while (true)
             {
-                "Project Name: ",
-                "Project Market: ",
-                "Project Coin: ",
-                "Project Pair: ",
-                "Project Period: "
-            });
-
-            if (manager.AddProject(input[0], input[1], input[2], input[3], input[4]))
-                output = "Successfully added project!";
+                name = num == 0? name : $"{name}{num}";
+                if (manager.AddProject(name, market, coin, pair, period))
+                    break;
+                num = rnd.Next();
+            }
+            
+            // Attempt to start the market websocket for the coin-pair
+            Project project = manager.projects[name];
+            output = "Invalid Market or Coin-Pair";
+            for (int i = 0; i < 5; ++i)
+            {
+                bool success = await manager.AddSecurityToMarket(project);
+                if (success)
+                    break;
+                else if (!success && i == 4)
+                {
+                    manager.RemoveProject(name);
+                    return false;
+                }
+                    
+                Thread.Sleep(2000);
+            }
+            
+            output = "Successfully added project!";
+            return true;
         }
 
 
-        private static async Task TrySubscribe()
+        private static string[] TryLoadConfig(string name)
         {
-            string[] input = multiInput(new string[]
-            {
-                "Market Name: ",
-                "Market Coin: ",
-                "Market Pair: ",
-            });
-
-            output = $"Successfully added {input[1]}-{input[2]} to {input[0]}!";
-            bool success = await manager.AddSecurityToMarket(input[0], input[1], input[2]);
-            if (!success)
-                output = "Invalid Coin-Pair";
-        }
-
-
-        private static async Task TryLoadConfig(string name)
-        {
+            var data = new string[5];
             try 
             {
                 var reader = new StreamReader($"./testdata/config/{name}");
-                var data = new string[5];
+                
                 int index = -1;
                 output = "Config loaded successfully!";
 
@@ -107,35 +119,26 @@ namespace TradingBot
                 {
                     while (!reader.EndOfStream)
                     {
-                        /* Get File Data */
                         var line = reader.ReadLine()!;
                         data[++index] = line;
                     }
                 }
-
-                if (!manager.AddProject(data[0], data[1], data[2], data[3], data[4]))
-                {
-                    output = "Invalid Project Settings!";
-                }
-                else
-                {
-                    bool suc = await manager.AddSecurityToMarket(data[1], data[2], data[3]);
-                    if (!suc)
-                        output = "Invalid Market Settings!";
-                }
-            }
+            } 
             catch (IOException  err)
             {
                 output = "File not found!";
                 Console.WriteLine(err);
-                return;
-            } 
+            }
+
+            return data;
         }
 
 
         private static void TryStartStop(bool start)
         {
-            output = $"Simulation Is Happening: {start}";
+            output = "Simulation Stopped";
+            if (start)
+                output = "Simulation Started";
             manager.canPlaceOrder = start;
         }
         
@@ -162,17 +165,21 @@ namespace TradingBot
                         break;
 
                     case "new": // new project
-                        TryAddProject();
+                        string[] input = multiInput(new string[]
+                        {
+                            "Project Name: ",
+                            "Project Market: ",
+                            "Project Coin: ",
+                            "Project Pair: ",
+                            "Project Period: "
+                        });
+                        TryAddProject(input).Wait();
                         break;
-
-                    case "sub": // sub to market | coinPair
-                        TrySubscribe().Wait();
-                        break;
-
+                    
                     case "load":
-                        // projectName, marketName, pairA, pairB, periodTime
-                        TryLoadConfig(inputs[0]).Wait();
+                        TryAddProject(TryLoadConfig(inputs[0])).Wait();
                         break;
+                    
 
                     case "start":
                         TryStartStop(true);
