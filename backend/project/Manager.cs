@@ -103,6 +103,7 @@ namespace TradingBot
             }
         }
 
+        public string currPrint { get; set; } = "";
 
         public void UpdateLatestMark(string market, string candleCode, decimal askPrice, decimal bidPrice)
         {
@@ -127,9 +128,16 @@ namespace TradingBot
                     percentChange = -1 * ((askPrice - entry) / entry);
                     tempSide = "buy";
                 }
-                
-                Console.WriteLine($"Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%  |  Bid: [{bidPrice}]");
-                decimal limit = 0.02m;
+
+                string newTxt = $"Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%  |  Bid: [{bidPrice}]";
+                if (!currPrint.Equals(newTxt))
+                {
+                    currPrint = newTxt;
+                    Console.WriteLine(currPrint);
+                }
+
+                Console.WriteLine();
+                decimal limit = 0.01m;
                 /*
                 1 = 100%
                 0.1 = 10%
@@ -186,12 +194,13 @@ namespace TradingBot
         {
             if (project.ProcessCandle(candle, true))
             {
-                if (canPlaceOrder && placeOrder)
+                if (canPlaceOrder)
                 {
-                    markets[project.market].PlaceOrder(project, candle.finalDecision, true);
+                    if (!placeOrder && candle.finalDecision.Equals("sell")) // happens during data fill
+                        markets[project.market].PlaceOrder(project, candle.finalDecision, false);
+                    else if (placeOrder) // happens for every new candle and last candle in data fill
+                        markets[project.market].PlaceOrder(project, candle.finalDecision, true);
                 }
-                    
-
                 ProcessFile.ProcessNext(outputs[project.name], project);
             }
         }

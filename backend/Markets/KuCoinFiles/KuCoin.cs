@@ -259,43 +259,44 @@ namespace KuCoinFiles
         }
 
 
+        private string GenerateClientId()
+        {
+            string uniqueCLI = "";
+            Random rnd = new Random();
+            while (uniqueCLI.Equals(""))
+            {
+                string tempCLI = $"JoNaKaNy{rnd.Next()}{rnd.Next()}";
+                if (orders.TryGetValue(tempCLI, out Order? order))
+                    continue;
+                // Once a unique client order ID has been made, exit
+                uniqueCLI = tempCLI;
+            }
+            return uniqueCLI;
+        }
+
+
         public async void PlaceOrder(Project project, string decision, bool newPos)
         {
             string pA = project.portfolio.pairA;
             string pB = project.portfolio.pairB;
             string coin = $"{pA}{pB}M";
 
-            Console.WriteLine("Here...");
-            Console.WriteLine(decision);
             if (!(decision.Equals("sell") || decision.Equals("buy")))
                 return;
-            Console.WriteLine("Here...4");
-
-            string uniqueCLI = "";
-            Random rnd = new Random();
-            while (uniqueCLI.Equals(""))
-            {
-                string tempCLI = $"JoNaKaNy{rnd.Next()}{rnd.Next()}";
-                Console.WriteLine(tempCLI);
-                if (orders.TryGetValue(tempCLI, out Order? order))
-                    continue;
-                // Once a unique client order ID has been made, exit
-                uniqueCLI = tempCLI;
-            }
 
             // Close the previous position, if any
             if (!project.clientId.Equals("") && orders.Remove(project.clientId))
-                await Order_POST(uniqueCLI, decision, coin, "3", "1");
-            
-            Console.WriteLine("Here...2");
+            {
+                await Order_POST(project.clientId, decision, coin, "3", "1"); //GenerateClientId()
+                project.clientId = "";
+            }
+                
             if (!newPos)
                 return;
 
-            Console.WriteLine("Here..3");
-            Console.WriteLine(uniqueCLI);
-
             // Open a new position
-            string orderId = await Order_POST(uniqueCLI, decision, coin, "3", "1");
+            string newCli = GenerateClientId();
+            string orderId = await Order_POST(newCli, decision, coin, "3", "1");
             if (orderId.Equals(""))
                 return; // I think this happens if the account doesn't have sufficient funds.
 
@@ -305,8 +306,8 @@ namespace KuCoinFiles
             decimal entry = decimal.Parse(data.value) / data.size;
 
             // Add new order to orders dictionary and remove old one, if any
-            orders.Add(uniqueCLI, new Order(entry, data.size, data.leverage, decision));
-            project.clientId = uniqueCLI;
+            orders.Add(newCli, new Order(entry, data.size, data.leverage, data.side));
+            project.clientId = newCli;
         }
 
 
