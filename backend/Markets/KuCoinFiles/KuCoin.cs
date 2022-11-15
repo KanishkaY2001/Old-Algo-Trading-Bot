@@ -129,6 +129,10 @@ namespace KuCoinFiles
 
         public Candle CreateCandle(List<string> rawData)
         {
+            if (rawData.Count() != 7)
+            {
+                Console.WriteLine(string.Join( ",", rawData.ToArray() ));
+            }
             return new Candle(new string[]
             {
                 rawData[0],

@@ -175,14 +175,15 @@ namespace TradingBot
                     var candles = await markets[market].GetDataFill(tempUri, diff/(60 * period));
                     for (int i = 0; i < candles.Count; ++i)
                     {
+                        Console.WriteLine($"Filling Data: {candles[i].unix} --------");
                         bool placeOrder = i == candles.Count - 1 ? true : false;
                         AddNewCandleHelper(project, candles[i], placeOrder);
                     }
                 }
                 else
                 {
-                    Console.WriteLine("No data fill needed.");
                     Candle newCandle = markets[market].CreateCandle(project.latestCandle);
+                    Console.WriteLine($"No data fill needed: {newCandle.unix}");
                     AddNewCandleHelper(project, newCandle, true);
                 }
             }
@@ -194,7 +195,7 @@ namespace TradingBot
             {
                 if (canPlaceOrder)
                 {
-                    if (!placeOrder && candle.finalDecision.Equals("sell")) // happens during data fill
+                    if (!placeOrder && (candle.finalDecision.Equals("sell") || candle.finalDecision.Equals("buy"))) // happens during data fill
                         markets[project.market].PlaceOrder(project, candle.finalDecision, false);
                     else if (placeOrder) // happens for every new candle and last candle in data fill
                         markets[project.market].PlaceOrder(project, candle.finalDecision, true);
