@@ -135,8 +135,6 @@ namespace TradingBot
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
-
-                Console.WriteLine();
                 decimal limit = 0.01m;
                 /*
                 1 = 100%
