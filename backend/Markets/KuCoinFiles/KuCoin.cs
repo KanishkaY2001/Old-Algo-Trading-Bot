@@ -216,6 +216,7 @@ namespace KuCoinFiles
         public async Task<string> Order_POST(string cli, string side, string symbol, string size, string levarage)
         {
             //Create my object
+            Console.WriteLine("Placing Order");
             var myData = new
                 {
                     clientOid = cli,
@@ -247,19 +248,24 @@ namespace KuCoinFiles
 
             var reqStream = request.GetRequestStream();
             reqStream.Write(byteArray, 0, byteArray.Length);
+            string tempId = "";
             try
             {
                 WebResponse response = request.GetResponse();
                 StreamReader reader = new StreamReader(response.GetResponseStream());
                 POrderRoot decerialized = JsonConvert.DeserializeObject<POrderRoot>(reader.ReadToEnd())!;
-                return decerialized.data.orderId;
+                tempId = decerialized.data.orderId;
             }
             catch (WebException exception)
             {
                 Console.WriteLine($"{exception.Message}  ...  RETRYING...");
                 Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
-                return await Order_POST(cli, side, symbol, size, levarage);
             }
+
+            if (!tempId.Equals(""))
+                return tempId;
+
+            return await Order_POST(cli, side, symbol, size, levarage);   
         }
 
 
@@ -291,7 +297,7 @@ namespace KuCoinFiles
             // Close the previous position, if any
             if (!project.clientId.Equals("") && orders.Remove(project.clientId))
             {
-                await Order_POST(project.clientId, decision, coin, "3", "1"); //GenerateClientId()
+                await Order_POST(project.clientId, decision, coin, "1", "1"); //GenerateClientId()
                 project.clientId = "";
             }
                 
@@ -300,9 +306,12 @@ namespace KuCoinFiles
 
             // Open a new position
             string newCli = GenerateClientId();
-            string orderId = await Order_POST(newCli, decision, coin, "3", "1");
+            string orderId = await Order_POST(newCli, decision, coin, "1", "1");
             if (orderId.Equals(""))
+            {
+                Console.WriteLine("OrderId IS NOTHING");
                 return; // I think this happens if the account doesn't have sufficient funds.
+            }
 
             string orderInfo = Result_GET($"orders/{orderId}");
             Console.WriteLine(orderInfo);

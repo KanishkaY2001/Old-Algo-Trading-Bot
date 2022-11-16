@@ -135,7 +135,7 @@ namespace TradingBot
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
-                decimal limit = 0.01m;
+                decimal limit = 0.004m;
                 /*
                 1 = 100%
                 0.1 = 10%
@@ -196,7 +196,11 @@ namespace TradingBot
                 if (canPlaceOrder)
                 {
                     if (!placeOrder && (candle.finalDecision.Equals("sell") || candle.finalDecision.Equals("buy"))) // happens during data fill
-                        markets[project.market].PlaceOrder(project, candle.finalDecision, false);
+                    {
+                        string decision = candle.finalDecision;
+                        candle.finalDecision = "-"; // Because this is part of datafill, we don't want to buy or sell here
+                        markets[project.market].PlaceOrder(project, decision, false);
+                    }
                     else if (placeOrder) // happens for every new candle and last candle in data fill
                         markets[project.market].PlaceOrder(project, candle.finalDecision, true);
                 }
