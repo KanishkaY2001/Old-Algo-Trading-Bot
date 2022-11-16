@@ -1,2 +1,2 @@
 # Ignore private files
-/testdata/login
+.info
