@@ -24,6 +24,7 @@ namespace KuCoinFiles
             { "60" , "1hour" },
         };
         public static string domain = "https://api-futures.kucoin.com";
+
         
         // Secret Information //
         public static string api_key = "6359023df3f40e00018ae3ce";
