@@ -23,7 +23,7 @@ namespace TradingBot
         public MacdSigOpt macdSOpt { get; set; } = new MacdSigOpt(12, 26, 9);
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
-        public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(2, 0.5m); // 22 3m
+        public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m); // 22 3m
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
         {
