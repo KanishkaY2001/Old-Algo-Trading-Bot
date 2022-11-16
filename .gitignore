@@ -1,3 +1,2 @@
 # Ignore private files
-.login
-.test
+*.info
