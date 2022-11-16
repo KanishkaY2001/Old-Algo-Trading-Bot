@@ -12,6 +12,7 @@ namespace TradingBot
         public TaskHandler tradeDecision { get; set; }
         public string market { get; set; }
         public string candleCode { get; set; } = "";
+        public string futureCandleCode { get; set; } = "";
         public string name { get; set; }
         public int period { get; set; }
         public bool initialUpdate { get; set; }
@@ -110,6 +111,27 @@ namespace TradingBot
                 
             data.Add(candle);
             MakeTradeDecision(canTrade);
+
+            // Backtest printing:
+            string macd = candle.macd != null ? ((decimal)candle.macd).ToString("0.00") : "-";
+            string signal = candle.signal != null ? ((decimal)candle.signal).ToString("0.00") : "-";
+            string hist = candle.hist != null ? ((decimal)candle.hist).ToString("0.00") : "-";
+            string k = candle.K != null ? ((decimal)candle.K).ToString("0.00") : "-";
+            string d = candle.D != null ? ((decimal)candle.D).ToString("0.00") : "-";
+
+            string xyz = "";
+            for (int i = 0; i < hiloOpt.pattern.Count(); ++i)
+            {
+                if (!hiloOpt.pattern[i].Equals("-"))
+                {
+                    if (xyz.Equals(""))
+                        xyz = $"{hiloOpt.pattern[i]}";
+                    else
+                        xyz = $"{xyz},{hiloOpt.pattern[i]}";
+                }
+            }
+            Console.WriteLine($"[{candle.chandDecision}], [{xyz}], [{macd}, {signal}, {hist}], [{k}, {d}]");
+
             return true;
         }
 

@@ -3,14 +3,17 @@ using TradingBot;
 using System.Security.Cryptography;
 using System.Net;
 using System.Text;
+using System.Diagnostics;
 
 namespace KuCoinFiles
 {
     public class KuCoin : IMarket
     {
         // General Information //
+        //public List<Datum> symbolData { get; set; }
+        public Dictionary<string,Datum> symbolData { get; set; } = new Dictionary<string, Datum>();
         public List<string> securities { get; set; } = new List<string>();
-        public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
+        //public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
         public Dictionary<string, Order> orders { get; set; } = new Dictionary<string, Order>();
         public int storageAmount { get; set; } = 100;
         public string market { get; set; } = "KuCoin";
@@ -27,9 +30,9 @@ namespace KuCoinFiles
 
          
         // Secret Information //
-        public static string api_key = "6359023df3f40e00018ae3ce";
-        public static string api_secret = "5c6d3def-37d0-4b01-8a6d-b828b2509d44";
-        public static string api_passphrase = "CleanSlate2001";
+        public static string api_key { get; set; } = "";
+        public static string api_secret { get; set; } = "";
+        public static string api_passphrase { get; set; } = "";
         
 
 
@@ -82,11 +85,52 @@ namespace KuCoinFiles
         
         public KuCoin()
         {
+            // Load secret info and websocket
+            LoadSecretInfo();
             SetupWebsocket();
+
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            // Load Symbol Data
+            string orderInfo = Result_GET($"contracts/active");
+            List<Datum> data = JsonConvert.DeserializeObject<ActiveRoot>(orderInfo)!.data;
+            for (int i = 0; i < data.Count(); ++i)
+                symbolData[data[i].symbol] = data[i];
+
+            Console.WriteLine($"Total Time: {stopWatch.ElapsedMilliseconds}");
+
             ohlcSocket = new WSocket(this);
             markSocket = new WSocket(this);
             ohlcSocketTask = new Task( () => ohlcSocket.StartStream(wss, createOhlcRequest()));
             markSocketTask = new Task( () => markSocket.StartStream(wss, createMarkRequest()));
+        }
+
+        public void LoadSecretInfo()
+        {
+            try 
+            {
+                var reader = new StreamReader($"./testdata/config/login.info");
+                using (reader)
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine()!;
+                        if (api_key.Equals(""))
+                            api_key = line;
+                        else if (api_secret.Equals(""))
+                            api_secret = line;
+                        else if(api_passphrase.Equals(""))
+                            api_passphrase = line;
+                    }
+                }
+            } 
+            catch (IOException  err)
+            {
+                Console.WriteLine(err);
+                Thread.Sleep(1000);
+                LoadSecretInfo();
+            }
         }
 
         public void RestartSocketTask()
@@ -110,8 +154,13 @@ namespace KuCoinFiles
         public string createMarkRequest()
         {
             List<string> subs = new List<string>();
-            string sub = string.Join(",", futureSecurities.Select(x => x.Key));
-            Console.WriteLine(sub);
+            for (int i = 0; i < securities.Count(); ++i)
+            {
+                string[] pair = securities[i].Split("_")[0].Split("-");
+                subs.Add($"{pair[0]}{pair[1]}M");
+            }
+
+            string sub = string.Join(",", subs);
             return $"{markParams[0]}0{markParams[1]}{sub}{markParams[2]}";
         }
 
@@ -129,12 +178,11 @@ namespace KuCoinFiles
             wss = $"{servers[0].endpoint}?token={data.token}";
         }
 
-        public Candle CreateCandle(List<string> rawData)
+        public Candle? CreateCandle(List<string> rawData)
         {
             if (rawData.Count() != 7)
-            {
-                Console.WriteLine(string.Join( ",", rawData.ToArray() ));
-            }
+                return null;
+
             return new Candle(new string[]
             {
                 rawData[0],
@@ -149,7 +197,6 @@ namespace KuCoinFiles
 
         public async void SocketMessage(string msg)
         {
-            
             var decerialized = JsonConvert.DeserializeObject<WSKline>(msg);
             if (decerialized == null) return;
             var data = decerialized.data;
@@ -176,7 +223,7 @@ namespace KuCoinFiles
                 case "tickerV2":
                     decimal ask = decimal.Parse(data.bestAskPrice);
                     decimal bid = decimal.Parse(data.bestBidPrice);
-                    Manager.Global.UpdateLatestMark(market, futureSecurities[candleCode], ask, bid);
+                    Manager.Global.UpdateLatestMark(market, candleCode, ask, bid);
                     break;
             }
         }
@@ -210,9 +257,23 @@ namespace KuCoinFiles
             request.Headers.Add("KC-API-PASSPHRASE", passphrase);
             request.Headers.Add("KC-API-KEY-VERSION", "2");
 
-            WebResponse response = request.GetResponse();
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            return reader.ReadLine()!;
+            string jsonResponse = "";
+            try
+            {
+                WebResponse response = request.GetResponse();
+                StreamReader reader = new StreamReader(response.GetResponseStream());
+                jsonResponse = reader.ReadLine()!;
+            }
+            catch (WebException exception)
+            {
+                Console.WriteLine($"{exception.Message}  ...  (GET ERROR) RETRYING...");
+                Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
+            }
+            
+            if (!jsonResponse.Equals(""))
+                return jsonResponse;
+
+            return Result_GET(requestPhrase);
         }
 
         public async Task<string> Order_POST(string cli, string side, string symbol, string size, string levarage)
@@ -260,7 +321,7 @@ namespace KuCoinFiles
             }
             catch (WebException exception)
             {
-                Console.WriteLine($"{exception.Message}  ...  RETRYING...");
+                Console.WriteLine($"{exception.Message}  ...  (POST ERROR) RETRYING...");
                 Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
             }
 
@@ -296,10 +357,13 @@ namespace KuCoinFiles
             if (!(decision.Equals("sell") || decision.Equals("buy")))
                 return;
 
-            // Close the previous position, if any
+            // Close the current position, if any exists
             if (!project.clientId.Equals("") && orders.Remove(project.clientId))
             {
-                await Order_POST(project.clientId, decision, coin, "1", "1"); //GenerateClientId()
+                string closeId = await Order_POST(GenerateClientId(), decision, coin, "3", "4"); //
+                //string exitPosInfo = Result_GET($"orders/{closeId}");
+                //Console.WriteLine("EXITING");
+                //Console.WriteLine(exitPosInfo);
                 project.clientId = "";
             }
                 
@@ -307,8 +371,8 @@ namespace KuCoinFiles
                 return;
 
             // Open a new position
-            string newCli = GenerateClientId();
-            string orderId = await Order_POST(newCli, decision, coin, "1", "1");
+            string openCli = GenerateClientId();
+            string orderId = await Order_POST(openCli, decision, coin, "3", "4");
             if (orderId.Equals(""))
             {
                 Console.WriteLine("OrderId IS NOTHING");
@@ -318,11 +382,14 @@ namespace KuCoinFiles
             string orderInfo = Result_GET($"orders/{orderId}");
             Console.WriteLine(orderInfo);
             var data = JsonConvert.DeserializeObject<GOrderRoot>(orderInfo)!.data;
-            decimal entry = decimal.Parse(data.value) / data.size;
+
+
+            var multi = (decimal)symbolData[coin].multiplier;
+            decimal entry = decimal.Parse(data.dealValue) / (data.size * multi);
 
             // Add new order to orders dictionary and remove old one, if any
-            orders.Add(newCli, new Order(entry, data.size, data.leverage, data.side));
-            project.clientId = newCli;
+            orders.Add(openCli, new Order(data.id, entry, data.size, data.leverage, data.side));
+            project.clientId = openCli;
         }
 
 
@@ -354,7 +421,7 @@ namespace KuCoinFiles
 
                 // Loop through all KLines and create candles out of them
                 for (int i = decerialized.data.Count - 1; i > 0; --i)
-                    candles.Add(CreateCandle(decerialized.data[i]));
+                    candles.Add(CreateCandle(decerialized.data[i])!);
 
                 actualCount = expectedCount;
             }
@@ -379,7 +446,7 @@ namespace KuCoinFiles
             
             // Store the code, update project with data and add data to output file
             securities.Add(candleCode);
-            futureSecurities.Add($"{coin}{pair}M", candleCode);
+            project.futureCandleCode = $"{coin}{pair}M";
             Manager.Global.TryProjectFill(project, candles);
             
             // Reset existing socket task

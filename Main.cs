@@ -10,8 +10,8 @@ namespace TradingBot
         {
             var manager = Manager.Global;
 
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
+            //Stopwatch stopWatch = new Stopwatch();
+            //stopWatch.Start();
 
             InputHandler.MainLoop();
 
@@ -31,8 +31,8 @@ namespace TradingBot
                 "1" // Period of the file (minutes in a ...)
             );*/
             
-            stopWatch.Stop();
-            Console.WriteLine($"Total Time: {stopWatch.ElapsedMilliseconds}");
+            //stopWatch.Stop();
+            //Console.WriteLine($"Total Time: {stopWatch.ElapsedMilliseconds}");
         }
     }
 }

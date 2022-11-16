@@ -112,15 +112,19 @@ namespace TradingBot
                 if (!project.market.Equals(market))
                     continue;
 
-                if (!project.candleCode.Equals(candleCode))
+                if (!project.futureCandleCode.Equals(candleCode))
                     continue;
                 
                 // DO EMERGENCY SELL STUFF:
                 if(!markets[market].orders.TryGetValue(project.clientId, out var order))
                     continue;
 
+                var datum = markets[market].symbolData[project.futureCandleCode];
+                decimal multi = (decimal)datum.multiplier;
+
                 decimal entry = order.entry;
                 decimal percentChange = (askPrice - entry) / entry;
+                decimal value = entry * multi * order.size;
                 string tempSide = "sell";
 
                 if (order.side.Equals("sell"))
@@ -128,21 +132,25 @@ namespace TradingBot
                     percentChange = -1 * ((askPrice - entry) / entry);
                     tempSide = "buy";
                 }
+                percentChange *= order.leverage;
 
-                string newTxt = $"Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%  |  Bid: [{bidPrice}]";
+                string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%";
                 if (!currPrint.Equals(newTxt))
                 {
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
-                decimal limit = 0.004m;
+
+                decimal limit = -0.01m;
                 /*
                 1 = 100%
                 0.1 = 10%
                 0.01 = 1%
                 0.001 = 0.1%
                 */
-                if (percentChange < limit) // rn: 0.1 (1%), has to be 0.02 (2%)
+
+                // changed this so if it is at or drops below -1%, the program auto-exits the position
+                if (percentChange > limit) // rn: 0.1 (1%), has to be 0.02 (2%)
                     continue;
                 
                 Candle latest = project.data[project.data.Count - 1];
@@ -182,7 +190,13 @@ namespace TradingBot
                 }
                 else
                 {
-                    Candle newCandle = markets[market].CreateCandle(project.latestCandle);
+                    Candle? newCandle = markets[market].CreateCandle(project.latestCandle);
+                    if (newCandle == null)
+                    {  
+                        Console.WriteLine("NEW CANDLE BECAME NULL"); // not sure why this happens or when...
+                        return;
+                    }
+
                     Console.WriteLine($"No data fill needed: {newCandle.unix}");
                     AddNewCandleHelper(project, newCandle, true);
                 }
@@ -195,6 +209,7 @@ namespace TradingBot
             {
                 if (canPlaceOrder)
                 {
+
                     if (!placeOrder && (candle.finalDecision.Equals("sell") || candle.finalDecision.Equals("buy"))) // happens during data fill
                     {
                         string decision = candle.finalDecision;

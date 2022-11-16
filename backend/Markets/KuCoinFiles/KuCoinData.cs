@@ -52,7 +52,7 @@ namespace KuCoinFiles
         public string type { get; set; } = "";
         public string side { get; set; } = "";
         public int size { get; set; }
-        public string value { get; set; } = "";
+        public string dealValue { get; set; } = "";
         public int leverage { get; set; }
     }
 
@@ -83,5 +83,26 @@ namespace KuCoinFiles
     {
         public string code { get; set; } = "";
         public TokenData data { get; set; } = new TokenData();
+    }
+
+    // Active Coin Info
+
+    public class Datum
+    {
+        public string symbol { get; set; } = "";
+        public string baseCurrency { get; set; } = "";
+        public string quoteCurrency { get; set; } = "";
+        public int maxOrderQty { get; set; }
+        public double maxPrice { get; set; }
+        public double multiplier { get; set; }
+        public double makerFeeRate { get; set; }
+        public double takerFeeRate { get; set; }
+        public int maxLeverage { get; set; }
+    }
+
+    public class ActiveRoot
+    {
+        public string code { get; set; } = "";
+        public List<Datum> data { get; set; } = new List<Datum>();
     }
 }
