@@ -276,7 +276,7 @@ namespace KuCoinFiles
             return Result_GET(requestPhrase);
         }
 
-        public async Task<string> Order_POST(string cli, string side, string symbol, string size, string levarage)
+        public async Task<string[]> Order_POST(string cli, string side, string symbol, string size, string levarage)
         {
             //Create my object
             Console.WriteLine("Placing Order");
@@ -318,6 +318,7 @@ namespace KuCoinFiles
                 StreamReader reader = new StreamReader(response.GetResponseStream());
                 POrderRoot decerialized = JsonConvert.DeserializeObject<POrderRoot>(reader.ReadToEnd())!;
                 tempId = decerialized.data.orderId;
+
             }
             catch (WebException exception)
             {
@@ -325,9 +326,15 @@ namespace KuCoinFiles
                 Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
             }
 
+            
             if (!tempId.Equals(""))
-                return tempId;
-
+            {
+                string orderInfo = Result_GET($"orders/{tempId}");
+                var data = JsonConvert.DeserializeObject<GOrderRoot>(orderInfo)!.data;
+                if (!data.dealValue.Equals("0"))
+                    return new string[] {tempId, orderInfo};
+            }
+                
             return await Order_POST(cli, side, symbol, size, levarage);   
         }
 
@@ -360,7 +367,7 @@ namespace KuCoinFiles
             // Close the current position, if any exists
             if (!project.clientId.Equals("") && orders.Remove(project.clientId))
             {
-                string closeId = await Order_POST(GenerateClientId(), decision, coin, "50", "4"); //
+                string closeId = (await Order_POST(GenerateClientId(), decision, coin, "1", "1"))[0]; //
                 //string exitPosInfo = Result_GET($"orders/{closeId}");
                 //Console.WriteLine("EXITING");
                 //Console.WriteLine(exitPosInfo);
@@ -372,20 +379,18 @@ namespace KuCoinFiles
 
             // Open a new position
             string openCli = GenerateClientId();
-            string orderId = await Order_POST(openCli, decision, coin, "50", "4");
+            string[] orderId = await Order_POST(openCli, decision, coin, "1", "1");
             if (orderId.Equals(""))
             {
                 Console.WriteLine("OrderId IS NOTHING");
                 return; // I think this happens if the account doesn't have sufficient funds.
             }
-
-            string orderInfo = Result_GET($"orders/{orderId}");
-            Console.WriteLine(orderInfo);
-            var data = JsonConvert.DeserializeObject<GOrderRoot>(orderInfo)!.data;
-
+            
+            Console.WriteLine(orderId[0]);
+            var data = JsonConvert.DeserializeObject<GOrderRoot>(orderId[0])!.data;
 
             var multi = (decimal)symbolData[coin].multiplier;
-            decimal entry = decimal.Parse(data.dealValue) / (data.size * multi);
+            decimal entry = decimal.Parse(data.value) / (data.size * multi);
 
             // Add new order to orders dictionary and remove old one, if any
             orders.Add(openCli, new Order(data.id, entry, data.size, data.leverage, data.side));

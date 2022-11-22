@@ -155,24 +155,36 @@ namespace TradingBot
             /* Make Trade Decision */
             if (canTrade)
                 tradeDecision.HandleTask(this);
+            
+            Candle candle = data[data.Count() - 1];
 
-            /*\
-            if (data.Count() < 2)
+            
+            var idlehodl = candle.finalDecision.Equals("idle") || candle.finalDecision.Equals("hodl");
+
+            if (!idlehodl)
                 return;
 
-            var candle = data[data.Count - 2];
-            Console.WriteLine(candle.finalDecision);
-            Console.WriteLine("-------------------");
-            if (candle.finalDecision.Equals("-") || candle.finalDecision.Equals("hodl") || candle.finalDecision.Equals("sell"))
+            var chand = candle.chandDecision;
+            var macd = candle.macd;
+            var sig = candle.signal;
+            var prevCross = "-";
+            for (int i = data.Count() - 1; i >= 0; --i)
             {
-                data[data.Count - 1].finalDecision = "buy";
+                if (!candle.cross.Equals("-"))
+                {
+                    prevCross = candle.cross;
+                    continue;
+                }
             }
-            else
-            {
-                data[data.Count - 1].finalDecision = "sell";
-            }
-            Console.WriteLine(candle.finalDecision);
-            */
+
+            if ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy")))
+                candle.finalDecision = "buy";
+            else if ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell")))
+                candle.finalDecision = "sell";
+            else if ((macd < 0 || sig < 0) && (prevCross.Equals("red")) && chand.Equals("sell"))
+                candle.finalDecision = "buy";
+            else if ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy"))
+                candle.finalDecision = "sell";
         }
 
 

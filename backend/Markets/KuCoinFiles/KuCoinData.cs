@@ -53,6 +53,7 @@ namespace KuCoinFiles
         public string side { get; set; } = "";
         public int size { get; set; }
         public string dealValue { get; set; } = "";
+        public string value { get; set; } = "";
         public int leverage { get; set; }
     }
 

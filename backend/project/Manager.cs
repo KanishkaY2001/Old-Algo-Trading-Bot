@@ -141,7 +141,7 @@ namespace TradingBot
                     Console.WriteLine(currPrint);
                 }
 
-                decimal limit = -0.01m;
+                decimal limit = -0.04m; // 4%
                 /*
                 1 = 100%
                 0.1 = 10%
