@@ -170,7 +170,7 @@ namespace TradingBot
             var prevCross = "-";
             for (int i = data.Count() - 1; i >= 0; --i)
             {
-                if (!candle.cross.Equals("-"))
+                if (!candle.cross.Equals("-") && prevCross.Equals("-"))
                 {
                     prevCross = candle.cross;
                     continue;
