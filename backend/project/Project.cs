@@ -181,7 +181,7 @@ namespace TradingBot
                 candle.finalDecision = "buy";
             else if ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell")))
                 candle.finalDecision = "sell";
-            else if ((macd < 0 || sig < 0) && (prevCross.Equals("red")) && chand.Equals("sell"))
+            else if ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell"))
                 candle.finalDecision = "buy";
             else if ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy"))
                 candle.finalDecision = "sell";
