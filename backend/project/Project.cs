@@ -153,6 +153,11 @@ namespace TradingBot
             /* Apply Chandelier Indicator */
             Chandelier.ApplyIndicator(this);
             
+            /* Make Trade Decision */
+            if (canTrade)
+                return;
+            tradeDecision.HandleTask(this);  
+
             Candle candle = data[data.Count() - 1];
             var chand = candle.chandDecision;
             decimal macd = 0;
@@ -196,13 +201,8 @@ namespace TradingBot
                         position = "";
                     }
                 }
-            }
-
-            /* Make Trade Decision */
-            if (canTrade)
-                tradeDecision.HandleTask(this);         
+            }       
         }
-
 
 
         /* Pinescript Methods */
