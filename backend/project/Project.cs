@@ -5,6 +5,7 @@ namespace TradingBot
         public List<Candle> data { get; set; } = new List<Candle>();
         public List<string> latestCandle { get; set; } = new List<string>();
         public string clientId { get; set; } = "";
+        public string position { get; set; } = "";
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
@@ -151,19 +152,8 @@ namespace TradingBot
 
             /* Apply Chandelier Indicator */
             Chandelier.ApplyIndicator(this);
-
-            /* Make Trade Decision */
-            if (canTrade)
-                tradeDecision.HandleTask(this);
             
             Candle candle = data[data.Count() - 1];
-
-            
-            var idlehodl = candle.finalDecision.Equals("idle") || candle.finalDecision.Equals("hodl");
-
-            if (!idlehodl)
-                return;
-
             var chand = candle.chandDecision;
             decimal macd = 0;
             decimal sig = 0;
@@ -176,18 +166,41 @@ namespace TradingBot
                     macd = data[i].macd != null ? (decimal)data[i].macd! : 0;
                     sig = data[i].signal != null ? (decimal)data[i].signal! : 0;
 
-                    if ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy")))
-                        candle.finalDecision = "buy";
-                    else if ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell")))
-                        candle.finalDecision = "sell";
-                    else if ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell"))
-                        candle.finalDecision = "buy";
-                    else if ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy"))
-                        candle.finalDecision = "sell";
+                    if ((position.Equals("")) && ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy"))))
+                    {
+                        Console.WriteLine($"BUYING LONG POSITION AT: {candle.unix}-----------------------------------------------");
 
-                    return;
+                        candle.finalDecision = "buy";
+                        position = "long";
+                    }
+                    else if ((position.Equals("long")) && ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell"))))
+                    {
+                        
+                        Console.WriteLine($"SELLING LONG POSITION AT: {candle.unix}-----------------------------------------------");
+
+                        candle.finalDecision = "sell";
+                        position = "";
+                    }
+                    else if ((position.Equals("")) && ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell")))
+                    {
+                        Console.WriteLine($"BUYING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
+
+                        candle.finalDecision = "sell";
+                        position = "short";
+                    }
+                    else if ((position.Equals("short")) && ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy")))
+                    {
+                        Console.WriteLine($"SELLING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
+                        
+                        candle.finalDecision = "buy";
+                        position = "";
+                    }
                 }
-            }            
+            }
+
+            /* Make Trade Decision */
+            if (canTrade)
+                tradeDecision.HandleTask(this);         
         }
 
 

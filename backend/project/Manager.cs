@@ -23,7 +23,7 @@ namespace TradingBot
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecChand).SetNext(tradeDecTail);
+            tradeDecHead.SetNext(tradeDecTail);
         }
 
 
