@@ -154,8 +154,9 @@ namespace TradingBot
             Chandelier.ApplyIndicator(this);
             
             /* Make Trade Decision */
-            if (canTrade)
+            if (!canTrade)
                 return;
+                
             tradeDecision.HandleTask(this);  
 
             Candle candle = data[data.Count() - 1];
