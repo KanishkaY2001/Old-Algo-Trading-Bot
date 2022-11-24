@@ -126,13 +126,19 @@ namespace TradingBot
                 decimal percentChange = (askPrice - entry) / entry;
                 decimal value = entry * multi * order.size;
                 string tempSide = "sell";
+                string position = order.side;
+
+                decimal takeProfit = 0.01m; // 1%
+                decimal stopLoss = 0.10m; // 1%
 
                 if (order.side.Equals("sell"))
                 {
+                    stopLoss *= -1;
                     percentChange = -1 * ((askPrice - entry) / entry);
                     tempSide = "buy";
                 }
-                percentChange *= order.leverage;
+                
+                //percentChange *= order.leverage;
 
                 string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%";
                 if (!currPrint.Equals(newTxt))
@@ -141,8 +147,6 @@ namespace TradingBot
                     Console.WriteLine(currPrint);
                 }
 
-                decimal takeProfit = 0.01m; // 1%
-                decimal stopLoss = 0.10m; // 10%
                 /*
                 1 = 100%
                 0.1 = 10%
@@ -151,7 +155,7 @@ namespace TradingBot
                 */
 
                 // changed this so if it is at or drops below -1%, the program auto-exits the position
-                if (percentChange > takeProfit || percentChange < stopLoss) // rn: 0.1 (1%), has to be 0.02 (2%)
+                if (percentChange > takeProfit || (position.Equals("buy") && (1 - askPrice/entry) > stopLoss) || (position.Equals("sell") && (1 - askPrice/entry) < -stopLoss)) // rn: 0.1 (1%), has to be 0.02 (2%)
                 {
                     Candle latest = project.data[project.data.Count - 1];
                     latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
