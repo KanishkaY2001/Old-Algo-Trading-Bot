@@ -156,7 +156,7 @@ namespace TradingBot
             /* Make Trade Decision */
             if (!canTrade)
                 return;
-                
+
             tradeDecision.HandleTask(this);  
 
             Candle candle = data[data.Count() - 1];
@@ -171,6 +171,8 @@ namespace TradingBot
                     prevCross = data[i].cross;
                     macd = data[i].macd != null ? (decimal)data[i].macd! : 0;
                     sig = data[i].signal != null ? (decimal)data[i].signal! : 0;
+
+                    Console.WriteLine($"{position} ... {macd} ... {sig} ... {prevCross} ... {chand}");
 
                     if ((position.Equals("")) && ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy"))))
                     {
