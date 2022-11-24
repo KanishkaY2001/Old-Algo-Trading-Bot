@@ -141,7 +141,7 @@ namespace TradingBot
                     Console.WriteLine(currPrint);
                 }
 
-                decimal limit = -0.04m; // 4%
+                decimal limit = 0.01m; // 1%
                 /*
                 1 = 100%
                 0.1 = 10%
@@ -150,12 +150,14 @@ namespace TradingBot
                 */
 
                 // changed this so if it is at or drops below -1%, the program auto-exits the position
-                if (percentChange > limit) // rn: 0.1 (1%), has to be 0.02 (2%)
+                if (percentChange < limit) // rn: 0.1 (1%), has to be 0.02 (2%)
                     continue;
                 
                 Candle latest = project.data[project.data.Count - 1];
                 latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                project.position = "";
                 markets[market].PlaceOrder(project, tempSide, false);
+                
             }
         }
 

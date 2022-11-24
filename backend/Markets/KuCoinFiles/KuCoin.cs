@@ -386,8 +386,8 @@ namespace KuCoinFiles
                 return; // I think this happens if the account doesn't have sufficient funds.
             }
             
-            Console.WriteLine(orderId[0]);
-            var data = JsonConvert.DeserializeObject<GOrderRoot>(orderId[0])!.data;
+            string orderInfo = Result_GET($"orders/{orderId[0]}");
+            var data = JsonConvert.DeserializeObject<GOrderRoot>(orderInfo)!.data;
 
             var multi = (decimal)symbolData[coin].multiplier;
             decimal entry = decimal.Parse(data.value) / (data.size * multi);

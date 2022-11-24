@@ -178,6 +178,7 @@ namespace TradingBot
                         candle.finalDecision = "buy";
                         position = "long";
                     }
+                    /*
                     else if ((position.Equals("long")) && ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell"))))
                     {
                         
@@ -185,7 +186,7 @@ namespace TradingBot
 
                         candle.finalDecision = "sell";
                         position = "";
-                    }
+                    }*/
                     else if ((position.Equals("")) && ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell")))
                     {
                         Console.WriteLine($"BUYING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
@@ -193,13 +194,14 @@ namespace TradingBot
                         candle.finalDecision = "sell";
                         position = "short";
                     }
+                    /*
                     else if ((position.Equals("short")) && ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy")))
                     {
                         Console.WriteLine($"SELLING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
                         
                         candle.finalDecision = "buy";
                         position = "";
-                    }
+                    }*/
                 }
             }       
         }
