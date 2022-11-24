@@ -133,7 +133,6 @@ namespace TradingBot
 
                 if (order.side.Equals("sell"))
                 {
-                    stopLoss *= -1;
                     percentChange = -1 * ((askPrice - entry) / entry);
                     tempSide = "buy";
                 }
