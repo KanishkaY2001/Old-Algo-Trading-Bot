@@ -128,37 +128,49 @@ namespace TradingBot
                 string tempSide = "sell";
                 string position = order.side;
 
-                decimal takeProfit = 0.01m; // 1%
-                decimal stopLoss = 0.10m; // 1%
+                decimal takeProfit = project.takeProfit;
+                decimal dynamicPercent = project.dynamicPercent;
 
                 if (order.side.Equals("sell"))
                 {
-                    percentChange = -1 * ((askPrice - entry) / entry);
+                    percentChange = -percentChange;
                     tempSide = "buy";
                 }
                 
-                //percentChange *= order.leverage;
 
-                string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  Exit: [{askPrice}]  |  Change: {(percentChange*100).ToString("0.000")}%";
+                string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  AskPrice: [{askPrice}]  |  Change: {(percentChange*order.leverage*100).ToString("0.000")}%";
                 if (!currPrint.Equals(newTxt))
                 {
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
 
-                /*
-                1 = 100%
-                0.1 = 10%
-                0.01 = 1%
-                0.001 = 0.1%
-                */
 
-                // changed this so if it is at or drops below -1%, the program auto-exits the position
-                if (percentChange > takeProfit || (position.Equals("buy") && (1 - askPrice/entry) > stopLoss) || (position.Equals("sell") && (1 - askPrice/entry) < -stopLoss)) // rn: 0.1 (1%), has to be 0.02 (2%)
+                // First time that percentage change exceeds take profit (only happens once)
+                if (percentChange > takeProfit && dynamicPercent == 0)
+                {
+                    project.dynamicPercent = percentChange;
+                    project.stopLoss = takeProfit / 4; // CHANGE HERE
+
+                // After take profit is exceeded once, increase stop loss everytime that current candle price > previous candle price
+                } else if (dynamicPercent != 0 && percentChange > dynamicPercent)
+                {
+                    project.stopLoss += ((percentChange - dynamicPercent) / 2); // CHANGE HERE
+
+                // Stoploss converges toward current candle price at logarithmic rate
+                } else if (project.currPercentChange != 0 && percentChange < project.currPercentChange && !(percentChange < -project.stopLoss))
+                {
+                    project.stopLoss += Math.Abs(askPrice - entry) / 6; // CHANGE HERE
+                }
+                project.currPercentChange = percentChange;
+
+
+                if (percentChange < -project.stopLoss)
                 {
                     Candle latest = project.data[project.data.Count - 1];
                     latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
                     project.position = "";
+                    project.dynamicPercent = 0;
                     markets[market].PlaceOrder(project, tempSide, false);
                 }
             }

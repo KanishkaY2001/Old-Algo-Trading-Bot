@@ -6,6 +6,10 @@ namespace TradingBot
         public List<string> latestCandle { get; set; } = new List<string>();
         public string clientId { get; set; } = "";
         public string position { get; set; } = "";
+        public decimal currPercentChange { get; set; } = 0;
+        public decimal dynamicPercent { get; set; } = 0;
+        public decimal takeProfit { get; set; } = 0.01m; // 1% // CHANGE HERE
+        public decimal stopLoss { get; set; } = 0.10m; // 10% // CHANGE HERE
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
@@ -189,7 +193,8 @@ namespace TradingBot
 
                         candle.finalDecision = "sell";
                         position = "";
-                    }*/
+                    }
+                    */
                     else if ((position.Equals("")) && ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell")))
                     {
                         Console.WriteLine($"BUYING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
@@ -204,7 +209,8 @@ namespace TradingBot
                         
                         candle.finalDecision = "buy";
                         position = "";
-                    }*/
+                    }
+                    */
                 }
             }       
         }
