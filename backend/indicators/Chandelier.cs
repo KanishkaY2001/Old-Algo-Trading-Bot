@@ -76,7 +76,7 @@ namespace TradingBot
             var data = project.data;
             var opt = project.chandalierOpt;
             getAtr(project);
-
+        
             var candle = data[data.Count - 1];
             var latestClose = candle.close;
             opt.closes.Add(latestClose);
@@ -91,6 +91,7 @@ namespace TradingBot
                 return;
 
             decimal atr = (decimal)opt.prevSum! * opt.multi;
+
             var prevCandle = data[data.Count - 2];
             var curCandle = data[data.Count - 1];
 
@@ -104,7 +105,10 @@ namespace TradingBot
 
             var prevDir = opt.dir;
             opt.dir = latestClose > shortStopPrev ? 1 : latestClose < longStopPrev ? -1 : opt.dir;
-            
+            //Console.WriteLine();
+
+            //Console.WriteLine($"{Helper.UnixToDate(data.Last().unix)} | {opt.dir}");
+
             candle.chandDecision = MakeDecision(opt.dir, prevDir, candle);
         }
 

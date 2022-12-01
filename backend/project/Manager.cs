@@ -145,6 +145,8 @@ namespace TradingBot
                     Console.WriteLine(currPrint);
                 }
 
+                string atrSmoothStatus = project.data.Last().smoothDecision;
+
 
                 // First time that percentage change exceeds take profit (only happens once)
                 if (percentChange > takeProfit && dynamicPercent == 0)
@@ -163,7 +165,6 @@ namespace TradingBot
                     project.stopLoss += Math.Abs(askPrice - entry) / 6; // CHANGE HERE
                 }
                 project.currPercentChange = percentChange;
-
 
                 if (percentChange < -project.stopLoss)
                 {

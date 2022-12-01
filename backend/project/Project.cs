@@ -29,6 +29,7 @@ namespace TradingBot
         public RsiOpt rsiOpt { get; set; } = new RsiOpt(14, 14);
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
         public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m); // 22 3m
+        public atrSmoothOpt atrSmoothOpt { get; set; } = new atrSmoothOpt(21, 6.3m);
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
         {
@@ -135,7 +136,7 @@ namespace TradingBot
                         xyz = $"{xyz},{hiloOpt.pattern[i]}";
                 }
             }
-            Console.WriteLine($"[{candle.chandDecision}], [{xyz}], [{macd}, {signal}, {hist}], [{k}, {d}]");
+            //Console.WriteLine($"[{candle.chandDecision}], [{xyz}], [{macd}, {signal}, {hist}], [{k}, {d}]");
 
             return true;
         }
@@ -156,6 +157,9 @@ namespace TradingBot
 
             /* Apply Chandelier Indicator */
             Chandelier.ApplyIndicator(this);
+
+            /* Apply ATR Smoothed Indicator */
+            atrSmooth.ApplyIndicator(this);
             
             /* Make Trade Decision */
             if (!canTrade)
