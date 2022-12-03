@@ -9,7 +9,7 @@ namespace TradingBot
         public decimal currPercentChange { get; set; } = 0;
         public decimal dynamicPercent { get; set; } = 0;
         public decimal takeProfit { get; set; } = 0.01m; // 1% // CHANGE HERE
-        public decimal stopLoss { get; set; } = 0.10m; // 10% // CHANGE HERE
+        public decimal stopLoss { get; set; } = 0.05m; // 10% // CHANGE HERE
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
@@ -164,7 +164,7 @@ namespace TradingBot
             /* Make Trade Decision */
             if (!canTrade)
                 return;
-
+    
             tradeDecision.HandleTask(this);  
 
             Candle candle = data[data.Count() - 1];
@@ -181,7 +181,9 @@ namespace TradingBot
                     sig = data[i].signal != null ? (decimal)data[i].signal! : 0;
 
                     Console.WriteLine($"{position} ... {macd} ... {sig} ... {prevCross} ... {chand}");
+                    string atrSmoothStatus = data.Last().smoothDecision;
 
+/*
                     if ((position.Equals("")) && ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy"))))
                     {
                         Console.WriteLine($"BUYING LONG POSITION AT: {candle.unix}-----------------------------------------------");
@@ -189,6 +191,7 @@ namespace TradingBot
                         candle.finalDecision = "buy";
                         position = "long";
                     }
+*/                    
                     /*
                     else if ((position.Equals("long")) && ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell"))))
                     {
@@ -199,13 +202,13 @@ namespace TradingBot
                         position = "";
                     }
                     */
-                    else if ((position.Equals("")) && ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell")))
+                    /*else if ((position.Equals("")) && ((macd > 0 || sig > 0) && (prevCross.Equals("red")) && chand.Equals("sell")))
                     {
                         Console.WriteLine($"BUYING SHORT POSITION AT: {candle.unix}-----------------------------------------------");
 
                         candle.finalDecision = "sell";
                         position = "short";
-                    }
+                    }*/
                     /*
                     else if ((position.Equals("short")) && ((prevCross.Equals("green") && macd > 0) || chand.Equals("buy")))
                     {

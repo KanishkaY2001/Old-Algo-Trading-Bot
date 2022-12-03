@@ -18,12 +18,13 @@ namespace TradingBot
         public TaskHandler tradeDecHiLo { get; } = new TradeDecHiLo();
         public TaskHandler tradeDecMacdS { get; } = new TradeDecMacd();
         public TaskHandler tradeDecChand { get; } = new TradeDecChand();
+        public TaskHandler tradeDecSmooth { get; } = new TradeDecSmooth();
         public TaskHandler tradeDecTail { get; } = new TradeDecTail();
         public bool canPlaceOrder { get; set; } = false;
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecTail);
+            tradeDecHead.SetNext(tradeDecSmooth).SetNext(tradeDecTail);
         }
 
 
@@ -144,9 +145,22 @@ namespace TradingBot
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
-
+                /*
                 string atrSmoothStatus = project.data.Last().smoothDecision;
-
+                if(project.position == "" && atrSmoothStatus.Equals("buy"))
+                {
+                    Candle latest = project.data[project.data.Count - 1];
+                    latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                    project.position = "";
+                    markets[market].PlaceOrder(project, atrSmoothStatus, false);        
+                }
+                if(project.position == "" && atrSmoothStatus.Equals("sell"))
+                {
+                    Candle latest = project.data[project.data.Count - 1];
+                    latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                    project.position = "";
+                    markets[market].PlaceOrder(project, atrSmoothStatus, false);        
+                }
 
                 // First time that percentage change exceeds take profit (only happens once)
                 if (percentChange > takeProfit && dynamicPercent == 0)
@@ -166,6 +180,7 @@ namespace TradingBot
                 }
                 project.currPercentChange = percentChange;
 
+
                 if (percentChange < -project.stopLoss)
                 {
                     Candle latest = project.data[project.data.Count - 1];
@@ -173,7 +188,9 @@ namespace TradingBot
                     project.position = "";
                     project.dynamicPercent = 0;
                     markets[market].PlaceOrder(project, tempSide, false);
-                }
+                }*/
+
+
             }
         }
 

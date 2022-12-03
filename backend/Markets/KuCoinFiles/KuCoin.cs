@@ -15,7 +15,7 @@ namespace KuCoinFiles
         public List<string> securities { get; set; } = new List<string>();
         //public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
         public Dictionary<string, Order> orders { get; set; } = new Dictionary<string, Order>();
-        public int storageAmount { get; set; } = 1000;
+        public int storageAmount { get; set; } = 100;
         public string market { get; set; } = "KuCoin";
         public Dictionary<string, string> periods { get; set; } = new Dictionary<string, string>()
         {
@@ -367,7 +367,7 @@ namespace KuCoinFiles
             // Close the current position, if any exists
             if (!project.clientId.Equals("") && orders.Remove(project.clientId))
             {
-                string closeId = (await Order_POST(GenerateClientId(), decision, coin, "10", "1"))[0]; //
+                string closeId = (await Order_POST(GenerateClientId(), decision, coin, "10", "5"))[0]; //
                 //string exitPosInfo = Result_GET($"orders/{closeId}");
                 //Console.WriteLine("EXITING");
                 //Console.WriteLine(exitPosInfo);
@@ -379,7 +379,7 @@ namespace KuCoinFiles
 
             // Open a new position
             string openCli = GenerateClientId();
-            string[] orderId = await Order_POST(openCli, decision, coin, "10", "1");
+            string[] orderId = await Order_POST(openCli, decision, coin, "10", "5");
             if (orderId.Equals(""))
             {
                 Console.WriteLine("OrderId IS NOTHING");
