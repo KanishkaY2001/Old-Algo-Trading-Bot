@@ -38,6 +38,9 @@ namespace TradingBot
         /* Chandalier Exit Data */
         public string chandDecision { get; set; } = "-";
 
+        /* SwingArm */
+        public string swingDecision { get; set; } = "-";
+
         /* ATR Smoothed */
         public string smoothDecision { get; set; } = "-";
 

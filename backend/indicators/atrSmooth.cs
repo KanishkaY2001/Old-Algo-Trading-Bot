@@ -149,8 +149,6 @@ namespace TradingBot
             else if (candle.smoothDecision.Equals("sell"))
                 project.NormalSell();
 
-            Console.WriteLine($"Atr at: {Helper.UnixToDate(candle.unix)}  |  Decision: {candle.smoothDecision}");
-
             return base.HandleTask(project);
         }
     }
