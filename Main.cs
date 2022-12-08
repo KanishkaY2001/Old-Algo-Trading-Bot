@@ -12,7 +12,7 @@ namespace TradingBot
 
             //Stopwatch stopWatch = new Stopwatch();
             //stopWatch.Start();
-
+            
             InputHandler.MainLoop();
 
             /*var project = ProcessFile.BackTest(

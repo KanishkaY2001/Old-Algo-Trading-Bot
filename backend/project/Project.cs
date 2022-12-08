@@ -30,6 +30,7 @@ namespace TradingBot
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
         public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m); // 22 3m
         public atrSmoothOpt atrSmoothOpt { get; set; } = new atrSmoothOpt(21, 6.3m);
+        public SwingArmOpt swingArmOpt {get ;set; } = new SwingArmOpt(28, 5, true);
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
         {
@@ -160,6 +161,9 @@ namespace TradingBot
 
             /* Apply ATR Smoothed Indicator */
             atrSmooth.ApplyIndicator(this);
+
+            /* Apply SwingArm Indicator */
+            SwingArm.ApplyIndicator(this);
             
             /* Make Trade Decision */
             if (!canTrade)

@@ -119,7 +119,7 @@ namespace TradingBot
         {
             string header = "";
             header = "Date,Time,Open,High,Low,Close,FinalDecision"; // general candle
-            header = $"{header},ChEDec"; // Chandalier Exit
+            header = $"{header},swingDec,ChEDec"; // Chandalier Exit
             header = $"{header},HiLo,HiLoDec"; // HiLo indicator
             header = $"{header},Macd,Signal,Histogram,Crossover,MacdDec"; // Macd indicator
             header = $"{header},Rsi,RsiMa"; // Rsi Indicator
@@ -141,6 +141,9 @@ namespace TradingBot
             output = $"{output}{candle.low},";
             output = $"{output}{candle.close},";
             output = $"{output}{candle.finalDecision},";
+
+            /* Swing Arm Info */
+            output = $"{output}{candle.swingDecision},";
 
             /* Chandalier Info */
             output = $"{output}{candle.chandDecision},";

@@ -15,7 +15,7 @@ namespace KuCoinFiles
         public List<string> securities { get; set; } = new List<string>();
         //public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
         public Dictionary<string, Order> orders { get; set; } = new Dictionary<string, Order>();
-        public int storageAmount { get; set; } = 100;
+        public int storageAmount { get; set; } = 200;
         public string market { get; set; } = "KuCoin";
         public Dictionary<string, string> periods { get; set; } = new Dictionary<string, string>()
         {
