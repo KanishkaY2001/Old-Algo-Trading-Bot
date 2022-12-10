@@ -15,7 +15,7 @@ namespace KuCoinFiles
         public List<string> securities { get; set; } = new List<string>();
         //public Dictionary<string,string> futureSecurities { get; set; } = new Dictionary<string,string>();
         public Dictionary<string, Order> orders { get; set; } = new Dictionary<string, Order>();
-        public int storageAmount { get; set; } = 200;
+        public int storageAmount { get; set; } = 2000;
         public string market { get; set; } = "KuCoin";
         public Dictionary<string, string> periods { get; set; } = new Dictionary<string, string>()
         {
@@ -334,7 +334,8 @@ namespace KuCoinFiles
                 if (!data.dealValue.Equals("0"))
                     return new string[] {tempId, orderInfo};
             }
-                
+            
+            Thread.Sleep(1000); // Sleep for a second in case of "Too Many Requests."
             return await Order_POST(cli, side, symbol, size, levarage);   
         }
 

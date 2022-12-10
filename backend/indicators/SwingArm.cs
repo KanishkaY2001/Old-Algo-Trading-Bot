@@ -24,6 +24,13 @@ namespace TradingBot
 
     public class SwingArm
     {
+        private static decimal Max(decimal val1, decimal val2, decimal val3)
+        {
+            var max = Math.Max(val1, val2);
+            max = Math.Max(max, val3);
+            return max;
+        }
+
         public static void ApplyIndicator(Project project)
         {
             var data = project.data;
@@ -47,13 +54,18 @@ namespace TradingBot
 
             var href = target.low <= prev.high ? target.high - prev.close : (target.high - prev.close) - 0.5m * (target.low - prev.high);
             var lref = target.high >= prev.low ? prev.close - target.low : (prev.close - target.low) - 0.5m * (prev.low - target.high);
+
+            //Console.WriteLine($"loss: {lref}");
             var tr = opt.mod ? Math.Max(Math.Max(opt.hilo, href), lref) : Math.Max(Math.Max(target.high - target.low, Math.Abs(target.high - prev.close)), Math.Abs(target.low - prev.close));
-            
-            opt.wildMa = opt.wildMa + (tr - opt.wildMa) / opt.period;
+            //Console.WriteLine($"loss: {Max(opt.hilo, href, lref)}");
+
+            var prevMa = opt.wildMa;
+            opt.wildMa = prevMa + ((tr - prevMa) / opt.period);
             var loss = opt.factor * opt.wildMa;
 
             var up = target.close - loss;
             var down = target.close + loss;
+            //Console.WriteLine($"up: {up}  ||  down: {down}");
 
             if (opt.trend == 0)
             {
@@ -66,6 +78,7 @@ namespace TradingBot
             opt.trendDown = prev.close < opt.trendDown ? Math.Min(down, opt.trendDown) : down;
 
             var nextTrend = target.close > opt.trendDown ? 1 : target.close < opt.trendUp ? -1 : opt.trend;
+            //var trail = opt.trend == 1? opt.trendUp : opt.trendDown;
 
             if (nextTrend != opt.trend)
             {
@@ -87,13 +100,19 @@ namespace TradingBot
         {
             var data = project.data;
             var candle = data.Last();
-
+            Console.WriteLine($"HANDLING TASK: {candle.swingDecision}");
             if (candle.swingDecision.Equals("buy"))
+            {
+                Console.WriteLine("Buy");
                 project.NormalBuy();
-                
+            }
 
             else if (candle.swingDecision.Equals("sell"))
+            {
+                Console.WriteLine("Sell");
                 project.NormalSell();
+            }
+                
 
             return base.HandleTask(project);
         }

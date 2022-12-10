@@ -8,8 +8,8 @@ namespace TradingBot
         public string position { get; set; } = "";
         public decimal currPercentChange { get; set; } = 0;
         public decimal dynamicPercent { get; set; } = 0;
-        public decimal takeProfit { get; set; } = 0.01m; // 1% // CHANGE HERE
-        public decimal stopLoss { get; set; } = 0.05m; // 10% // CHANGE HERE
+        public decimal takeProfit { get; set; } = 0.003m; // 1% // CHANGE HERE
+        public decimal stopLoss { get; set; } = 0.001m; // 10% // CHANGE HERE
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
@@ -30,7 +30,7 @@ namespace TradingBot
         public StochRsiOpt stochRsiOpt { get; set; } = new StochRsiOpt(14, 3);
         public ChandelierOpt chandalierOpt { get; set; } = new ChandelierOpt(22, 3m); // 22 3m
         public atrSmoothOpt atrSmoothOpt { get; set; } = new atrSmoothOpt(21, 6.3m);
-        public SwingArmOpt swingArmOpt {get ;set; } = new SwingArmOpt(28, 5, true);
+        public SwingArmOpt swingArmOpt {get ;set; } = new SwingArmOpt(28, 7, true);
 
         public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
         {
@@ -167,7 +167,11 @@ namespace TradingBot
             
             /* Make Trade Decision */
             if (!canTrade)
+            {
+                Console.WriteLine("CANNOT TRADE");
                 return;
+            }
+                
     
             tradeDecision.HandleTask(this);  
 
@@ -184,7 +188,7 @@ namespace TradingBot
                     macd = data[i].macd != null ? (decimal)data[i].macd! : 0;
                     sig = data[i].signal != null ? (decimal)data[i].signal! : 0;
 
-                    Console.WriteLine($"{position} ... {macd} ... {sig} ... {prevCross} ... {chand}");
+                    //Console.WriteLine($"{position} ... {macd} ... {sig} ... {prevCross} ... {chand}");
                     string atrSmoothStatus = data.Last().smoothDecision;
 
 /*

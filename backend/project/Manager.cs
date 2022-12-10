@@ -140,13 +140,25 @@ namespace TradingBot
                     tempSide = "buy";
                 }
                 
-
-                string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  AskPrice: [{askPrice}]  |  Change: {(percentChange*order.leverage*100).ToString("0.000")}%";
+                string newTxt = $"Value: [{value}]  |  Entry: [{entry}]  |  AskPrice: [{askPrice}]  |  Change: {(percentChange).ToString("0.00000")} | takeProfit: {(takeProfit).ToString("0.00000")} | stopLoss: {(-project.stopLoss).ToString("0.00000")}";
                 if (!currPrint.Equals(newTxt))
                 {
                     currPrint = newTxt;
                     Console.WriteLine(currPrint);
                 }
+
+
+
+                if (percentChange > takeProfit || percentChange < -project.stopLoss)     // if( 0.0121 > 0.012)
+                {
+                    Candle latest = project.data[project.data.Count - 1];
+                    latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                    project.position = "";
+                    project.dynamicPercent = 0;
+                    markets[market].PlaceOrder(project, tempSide, false);
+                }
+
+
                 /*
                 string atrSmoothStatus = project.data.Last().smoothDecision;
                 if(project.position == "" && atrSmoothStatus.Equals("buy"))
