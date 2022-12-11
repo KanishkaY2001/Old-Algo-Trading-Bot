@@ -4,12 +4,13 @@ namespace TradingBot
     {
         public List<Candle> data { get; set; } = new List<Candle>();
         public List<string> latestCandle { get; set; } = new List<string>();
+        public bool backTesting { get; set; } = false;
         public string clientId { get; set; } = "";
-        public string position { get; set; } = "";
+        public string position { get; set; } = "-";
         public decimal currPercentChange { get; set; } = 0;
         public decimal dynamicPercent { get; set; } = 0;
-        public decimal takeProfit { get; set; } = 0.003m; // 1% // CHANGE HERE
-        public decimal stopLoss { get; set; } = 0.001m; // 10% // CHANGE HERE
+        public decimal takeProfit { get; set; } = 2m; // // CHANGE HERE
+        public decimal stopLoss { get; set; } = 10m; // // CHANGE HERE
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
         public Portfolio portfolio { get; set; }
@@ -32,13 +33,14 @@ namespace TradingBot
         public atrSmoothOpt atrSmoothOpt { get; set; } = new atrSmoothOpt(21, 6.3m);
         public SwingArmOpt swingArmOpt {get ;set; } = new SwingArmOpt(28, 7, true);
 
-        public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr)
+        public Project(TaskHandler _d, Portfolio _p, string _m, string _n, int _pr, bool _bt)
         {
             name = _n;
             market = _m; // market
             portfolio = _p;
             period = _pr;
             tradeDecision = _d;
+            backTesting = _bt;
             tradeDecision.HandleTask(this);
         }
 
@@ -60,6 +62,7 @@ namespace TradingBot
             Candle candle = data.Last();
             //portfolio.stopLoss = data[data.Count - 3].close;
             
+            /*
             if (Dummy.positionStatus.Equals("Short"))
             {
                 portfolio.stopLoss = candle.close + candle.close * 0.1m;
@@ -68,38 +71,68 @@ namespace TradingBot
             {
                 portfolio.stopLoss = candle.close - candle.close * 0.1m;
             }
+            */
             
-            portfolio.buyOrder = candle.close;
-
             /* allowance allows constant buy amount at set price */
             decimal buy = Math.Min(portfolio.allowance, portfolio.valueB);
             buy = portfolio.allowance != 0? buy : portfolio.valueB;
             
             /* Buy pairA using pairB */
-            //portfolio.valueA = buy / portfolio.buyOrder;
             portfolio.valueB -= buy;
             candle.finalDecision = "buy";
-            if (portfolio.buyOrder == 0)
-            {
-                Console.WriteLine("WUAWIUABDUIAWFAUGAW");
-            }
+            
+
             /* Add a snapshot of the portfolio */
-            AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###}");
+            if (!position.Equals("-")) AddPnL();
+            position = "buy";
+            portfolio.buyOrder = candle.close;
         }
 
         public void NormalSell()
         {
             Candle candle = data.Last();
-
+            
             /* Sell pairA and get pairB */
             portfolio.valueB += portfolio.valueA * candle.close;
             portfolio.valueA = 0;
             candle.finalDecision = "sell";
+            
 
             /* Add a snapshot of the portfolio */
-            //decimal profit = (candle.close / portfolio.buyOrder - 1) * 100;
-            //portfolio.allProfit += profit;
-            //AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
+            if (!position.Equals("-")) AddPnL();
+            position = "sell";
+            portfolio.buyOrder = candle.close;
+
+        }
+
+        public bool Emergency(decimal askPrice, decimal entry)
+        {
+            // Emergency Sell Logic
+            var candle = data.Last();
+            if (!candle.finalDecision.Equals("-"))
+            {
+                decimal percentChange = (askPrice - entry) / entry;
+                if (position.Equals("sell")) percentChange *= -1;
+
+                Console.WriteLine($"{Helper.UnixToDate(data.Last().unix)}  ||  {portfolio.buyOrder}  ||  Change: {percentChange}");
+                
+                if (percentChange > takeProfit || percentChange < -stopLoss)
+                {
+                    position = "-";
+                    candle.finalDecision = "-";
+                    AddPnL();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void AddPnL()
+        {
+            var candle = data.Last();
+            decimal profit = (candle.close / portfolio.buyOrder - 1) * 100;
+            portfolio.allProfit += profit;
+            AddSnap(candle.unix, $"{portfolio.valueA:0.###},{portfolio.valueB:0.###},{profit:0.###}%,{portfolio.allProfit:0.###}%");
         }
 
 
@@ -166,15 +199,31 @@ namespace TradingBot
             SwingArm.ApplyIndicator(this);
             
             /* Make Trade Decision */
-            if (!canTrade)
-            {
-                Console.WriteLine("CANNOT TRADE");
-                return;
-            }
+            if (!canTrade) return;
                 
-    
-            tradeDecision.HandleTask(this);  
+            tradeDecision.HandleTask(this);
 
+            /* Backtesting emergency exit */
+            if (backTesting) Emergency(data.Last().close, portfolio.buyOrder);
+
+
+
+
+            /*
+            decimal percentChange = (askPrice - entry) / entry;
+            if (percentChange > takeProfit || percentChange < -stopLoss)     // if( 0.0121 > 0.012)
+            {
+                Candle latest = project.data[project.data.Count - 1];
+                latest.finalDecision = "-"; // This implies that the current position was sold (neutral)
+                project.position = "";
+                project.dynamicPercent = 0;
+                markets[market].PlaceOrder(project, tempSide, false);
+            }
+            */
+
+
+
+            /*
             Candle candle = data[data.Count() - 1];
             var chand = candle.chandDecision;
             decimal macd = 0;
@@ -190,8 +239,9 @@ namespace TradingBot
 
                     //Console.WriteLine($"{position} ... {macd} ... {sig} ... {prevCross} ... {chand}");
                     string atrSmoothStatus = data.Last().smoothDecision;
+                    */
 
-/*
+                    /*
                     if ((position.Equals("")) && ((macd < 0 || sig < 0) && (prevCross.Equals("green")) && (chand.Equals("buy"))))
                     {
                         Console.WriteLine($"BUYING LONG POSITION AT: {candle.unix}-----------------------------------------------");
@@ -199,7 +249,7 @@ namespace TradingBot
                         candle.finalDecision = "buy";
                         position = "long";
                     }
-*/                    
+                    */                    
                     /*
                     else if ((position.Equals("long")) && ((prevCross.Equals("red") && macd < 0) || (chand.Equals("sell"))))
                     {
@@ -226,8 +276,8 @@ namespace TradingBot
                         position = "";
                     }
                     */
-                }
-            }       
+                //}
+            //}       
         }
 
 

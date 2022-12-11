@@ -100,18 +100,12 @@ namespace TradingBot
         {
             var data = project.data;
             var candle = data.Last();
-            Console.WriteLine($"HANDLING TASK: {candle.swingDecision}");
+
             if (candle.swingDecision.Equals("buy"))
-            {
-                Console.WriteLine("Buy");
                 project.NormalBuy();
-            }
 
             else if (candle.swingDecision.Equals("sell"))
-            {
-                Console.WriteLine("Sell");
                 project.NormalSell();
-            }
                 
 
             return base.HandleTask(project);

@@ -2,12 +2,12 @@ namespace TradingBot
 {
     public class ProcessFile
     {
-        public static Project BackTest(string _in, string _out, Portfolio portfolio, int _p)
+        public static Project BackTest(string _in, string _out, Portfolio portfolio, int skip, int _p)
         {
             var reader = new StreamReader(_in);
             var writer = new StreamWriter(_out, false);
             var tradeHead = Manager.Global.tradeDecHead;
-            var project = new Project(tradeHead, portfolio, "", "test", _p);
+            var project = new Project(tradeHead, portfolio, "", "test", _p, true);
 
             using (reader) using (writer)
             {
@@ -19,12 +19,15 @@ namespace TradingBot
 
                 while (!reader.EndOfStream)
                 {
+                    /* Determines if the candle can buy / sell */
+                    bool canProcess = data.Count >= skip ? true : false;
+
                     /* Get File Data */
                     var line = reader.ReadLine()!;
 
                     /* Process Candle */
                     var candle = new Candle(line.Split(","));
-                    project.ProcessCandle(candle, true);
+                    project.ProcessCandle(candle, canProcess);
                 }
 
                 for (int i = 0; i < data.Count; ++i)
@@ -70,7 +73,7 @@ namespace TradingBot
             
             var tradeHead = Manager.Global.tradeDecHead;
             Parallel.For(0, chandOpts.Count, i => {
-                var project = new Project(tradeHead, new Portfolio("ADA","USDT",0,100,100,0.001m,0.001m), "", $"test{i}", 1440);
+                var project = new Project(tradeHead, new Portfolio("ADA","USDT",0,100,100,0.001m,0.001m), "", $"test{i}", 1440, true);
                 project.chandalierOpt = chandOpts[i];
                 for (int j = 0; j < data.Count; ++j)
                 {
