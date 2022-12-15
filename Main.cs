@@ -30,7 +30,7 @@ namespace TradingBot
                 // [pairA, pairB, valueA, valueB, allowance, maker, taker]
                 new Portfolio("ADA","USDT",0,100,100,0.001m,0.001m),
                 "1" // Period of the file (minutes in a ...)
-            );*/
+            );*///
             
             //stopWatch.Stop();
             //Console.WriteLine($"Total Time: {stopWatch.ElapsedMilliseconds}");
