@@ -232,9 +232,9 @@ namespace TradingBot
                     var candles = await markets[market].GetDataFill(tempUri, diff/(60 * period));
                     for (int i = 0; i < candles.Count; ++i)
                     {
-                        Console.WriteLine($"Filling Data: {candles[i].unix} --------");
-                        bool placeOrder = i == candles.Count - 1 ? true : false;
-                        AddNewCandleHelper(project, candles[i], placeOrder);
+                        //Console.WriteLine($"Filling Data: {candles[i].unix} --------");
+                        //bool placeOrder = i == candles.Count - 1 ? true : false;
+                        AddNewCandleHelper(project, candles[i], true);
                     }
                 }
                 else

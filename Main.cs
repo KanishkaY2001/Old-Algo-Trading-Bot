@@ -20,7 +20,7 @@ namespace TradingBot
                 "./testdata/output/testFile.csv", // filepath OUTPUT
                 // [pairA, pairB, valueA, valueB, allowance, maker, taker]
                 new Portfolio("ADA","USDT",0,100,100,0.001m,0.001m),
-                200, // Candles to skip (allows data to be more accurate)
+                0, // Candles to skip (allows data to be more accurate)
                 1440 // (n minutes) Period of the file (minutes in a ...)
             );
             
