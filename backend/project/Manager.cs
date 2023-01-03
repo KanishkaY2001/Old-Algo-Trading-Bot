@@ -26,7 +26,7 @@ namespace TradingBot
 
         public Manager()
         {
-            tradeDecHead.SetNext(tradeDecSwing).SetNext(tradeDecTail);
+            tradeDecHead.SetNext(tradeDecSmooth).SetNext(tradeDecTail);
         }
 
 

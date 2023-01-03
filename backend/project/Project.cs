@@ -9,7 +9,7 @@ namespace TradingBot
         public string position { get; set; } = "-";
         public decimal currPercentChange { get; set; } = 0;
         public decimal dynamicPercent { get; set; } = 0;
-        public decimal takeProfit { get; set; } = 2m; // // CHANGE HERE
+        public decimal takeProfit { get; set; } = 10m; // // CHANGE HERE
         public decimal stopLoss { get; set; } = 10m; // // CHANGE HERE
         public int latestTime { get; set; }
         public int maxDataLen { get; set; } = 50; // Everything else is removed
