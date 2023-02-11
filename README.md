@@ -11,3 +11,6 @@ An algorithmic trading bot which uses several indicators which are translated fr
 - Sharpe Ratio
 - Stochastic RSI
 - Swing Arm Trades
+
+### Markets:
+- KuCoin
